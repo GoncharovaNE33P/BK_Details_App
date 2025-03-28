@@ -1,0 +1,19 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+  <!--DarkBlue = #003399-->
+  <!--Blue = #5F69B1-->
+  <!--Red = #FF9166-->
+  <!--Green = #66C190-->
+  <!--Yellow = #FFE666-->
+  <!--Grey = #CCCCCC-->
+
+	<Style>
+		
+	</Style>
+</Styles>
