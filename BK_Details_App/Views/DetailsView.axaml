@@ -44,7 +44,8 @@
 		<!--Панель с файлами-->
 		<Grid Grid.Row="2" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
-			<Grid Grid.Column="0" RowDefinitions="94*, 6*">
+			<Border Grid.Column="0" BorderBrush="#CCCCCC" BorderThickness="0 3 3 0">
+			<Grid Grid.Column="0" RowDefinitions="94*, 6*" >
 				<Border Grid.Row="1" Background="#003399"></Border>
 				<ListBox Grid.Row="0" Background="Transparent">
 					<ListBox.ItemsPanel>
@@ -265,8 +266,10 @@
 				</ListBox>
 				<Button Classes="ChooseUploadFile" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
 			</Grid>
+			</Border>
 			
 			<!--Правая часть-->
+			<Border Grid.Column="1" BorderBrush="#CCCCCC" BorderThickness="0 3 0 0">
 			<Grid Grid.Column="1" RowDefinitions="Auto, 93*">
 				<Grid Grid.Row="0" ColumnDefinitions="86*, 7*, 7*">
 					<ComboBox Classes="ChoiceGroup" Grid.Column="0" HorizontalAlignment="Stretch"></ComboBox>
@@ -274,7 +277,7 @@
 					<Image Classes="FavoritesButton" Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
 				</Grid>
 				
-				<ListBox Grid.Row="1" Background="LightGray">
+				<ListBox Grid.Row="1" Background="Transparent">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<UniformGrid Columns="2"/>
@@ -306,6 +309,7 @@
 					</ListBox.Items>
 				</ListBox>
 			</Grid>
+			</Border>
 		</Grid>
 	</Grid>
 </UserControl>

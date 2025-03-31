@@ -17,7 +17,7 @@
 		<Setter Property="Background" Value="#5F69B1"></Setter>
 		<Setter Property="Foreground" Value="White"></Setter>
 		<Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
-		<Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+		<Setter Property="VerticalContentAlignment" Value="Center"></Setter>		
 	</Style>
 
 	<Style Selector="Button.ChooseUploadFile:pointerover /template/ ContentPresenter">
@@ -25,6 +25,14 @@
 		<Setter Property="BorderThickness" Value="3"></Setter>
 		<Setter Property="Background" Value="#5F69B1"></Setter>
 		<Setter Property="Foreground" Value="White"></Setter>
+	</Style>
+
+	<Style Selector="Button.ChooseUploadFile:pressed">
+		<Setter Property="RenderTransform">
+			<Setter.Value>
+				<ScaleTransform ScaleX="1" ScaleY="1"></ScaleTransform>
+			</Setter.Value>
+		</Setter>
 	</Style>
 
 	<Style Selector="Border.ItemsLeft">
