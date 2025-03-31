@@ -76,7 +76,7 @@ namespace BK_Details_App.ViewModels
                 FilteredMaterials = FilteredMaterials.Where(x => x.CategoryNavigation == SelectedCategory).ToList();
             }
 
-            if (_isAscending)
+            if (!_isAscending)
             {
                 FilteredMaterials = new (
                     FilteredMaterials.OrderBy(x => x.Name)
