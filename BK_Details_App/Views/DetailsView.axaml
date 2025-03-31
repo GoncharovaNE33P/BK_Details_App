@@ -292,7 +292,7 @@
 					<Image Classes="FavoritesButton" Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
 				</Grid>
 				
-				<ListBox Grid.Row="1" Background="Transparent">
+				<ListBox Grid.Row="1" Background="Transparent" ItemsSource="{Binding FilteredMaterials}">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<UniformGrid Columns="2"/>
