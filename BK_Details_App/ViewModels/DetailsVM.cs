@@ -1,5 +1,10 @@
-﻿using System;
+﻿using Aspose.Cells;
+using Avalonia.Styling;
+using BK_Details_App.Models;
+using ReactiveUI;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +13,100 @@ namespace BK_Details_App.ViewModels
 {
     internal class DetailsVM : ViewModelBase
     {
+        List<Materials> _materialsList = new();
+        public List<Materials> MaterialsList { get => _materialsList; set => this.RaiseAndSetIfChanged(ref _materialsList, value); }
+        List<Groups> _groupsList = new();
+        public List<Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
+        List<Category> _categoriesList = new();
+        public List<Category> CategoriesList { get => _categoriesList; set => this.RaiseAndSetIfChanged(ref _categoriesList, value); }
 
+        public DetailsVM()
+        {
+            ReadFromExcelFile();
+        }
+
+        public void ReadFromExcelFile()
+        {
+            // Загрузить файл Excel
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
+            Workbook wb = new Workbook(filePath);
+
+            // Получить все рабочие листы
+            WorksheetCollection collection = wb.Worksheets;
+            Random random = new Random();
+            // Перебрать все рабочие листы
+            for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
+            {
+                // Получить рабочий лист, используя его индекс
+                Worksheet worksheet = collection[worksheetIndex];
+                if (worksheet.Name == "Крепёж" || worksheet.Name == "Электромонт") continue;
+                //if (_groupsList.FirstOrDefault(x => x.Name == worksheet.Name) is null) //если такой группы еще нет, создать объект и добавить ее
+                //{
+                    Groups groups = new Groups() 
+                    { 
+                        GroupIdNumber = random.Next(1, 1000), 
+                        Name = worksheet.Name 
+                    };
+                    _groupsList.Add(groups);
+                //}
+
+                // Получить количество строк и столбцов
+                int rows = worksheet.Cells.MaxDataRow;
+                int cols = worksheet.Cells.MaxDataColumn;
+                int lastColoredRow = -1; // Запоминаем индекс последней добавленной ячейки с жирным шрифтом
+
+                // Цикл по строкам
+                for (int i = 1; i < rows; i++)
+                {
+                    // Перебрать каждый столбец в выбранной строке
+                    for (int j = 1; j < cols; j++) //начинаем со столбца с наименованием
+                    {
+                        Cell cell = worksheet.Cells[i, j];
+                        Aspose.Cells.Style style = cell.GetStyle();
+
+                        if (cell.StringValue == "") break;
+
+                        if (style.Font.IsBold is true) 
+                        {
+                            // Если предыдущая ячейка в той же колонке тоже была с жирным шрифтом, удаляем её
+                            if (lastColoredRow == cell.Row - 1)
+                            {
+                                _categoriesList.RemoveAt(_categoriesList.Count - 1);
+                            }
+
+                            Category category = new Category() 
+                            {
+                                CategoryId = random.Next(1, 1000),
+                                Name = cell.StringValue
+                            };
+                            _categoriesList.Add(category);
+
+                            lastColoredRow = cell.Row; // Запоминаем текущую строку
+                            break;
+                        }
+                        else
+                        {
+                            Materials materials = new Materials()
+                            {
+                                IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue, //в предыдущей ячейке содержится номер
+                                Name = cell.StringValue,
+                                Measurement = worksheet.Cells[i, j + 1].StringValue,
+                                Analogs = worksheet.Cells[i, j + 2].StringValue,
+                                Note = worksheet.Cells[i, j + 3].StringValue,
+                                GroupNavigation = _groupsList[_groupsList.Count - 1],
+                                Group = _groupsList[_groupsList.Count - 1].GroupIdNumber,
+                                CategoryNavigation = _categoriesList[_categoriesList.Count - 1],
+                                Category = _categoriesList[_categoriesList.Count - 1].CategoryId
+                            };
+                            _materialsList.Add(materials);
+                            break;
+                        }
+                    }
+                    // переходим на следующую строку
+                }
+                // переходим на следующий лист
+            }
+
+        }
     }
 }
