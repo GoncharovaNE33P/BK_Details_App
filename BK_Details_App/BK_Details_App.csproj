@@ -14,6 +14,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\del.png" />
+    <None Remove="Assets\edit.png" />
+    <None Remove="Assets\heart-add.png" />
+    <None Remove="Assets\heart-add_svgrepo.com.ico" />
+    <None Remove="Assets\heart-add_svgrepo.com.svg" />
+    <None Remove="Assets\heart-search.png" />
+    <None Remove="Assets\heart-search_svgrepo.com.ico" />
+    <None Remove="Assets\heart-search_svgrepo.com.svg" />
     <None Remove="Assets\logobk.png" />
   </ItemGroup>
 

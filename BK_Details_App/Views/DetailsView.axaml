@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="using:BK_Details_App.ViewModels"
+			 xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -12,10 +13,11 @@
 		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>
 
 		<!--Верхняя панель с лого и кнопками-->
-		<Grid Grid.Row="0" ColumnDefinitions="65*, 18*, 18*">
+		<Grid Grid.Row="0" ColumnDefinitions="15*, 49*, 18*, 18*">
 			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
-			<Button Classes="ChooseUploadFile" Grid.Column="1" Margin="10">Выбрать файл для сравнения</Button>
-			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="10">Выгрузить результат в Excel</Button>
+			<TextBlock Grid.Column="1">Просмотр материалов</TextBlock>
+			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="10">Выбрать файл для сравнения</Button>
+			<Button Classes="ChooseUploadFile" Grid.Column="3" Margin="10">Выгрузить результат в Excel</Button>
 		</Grid>
 		
 		<!--Поиск, сортировка и фильтрация-->
@@ -39,14 +41,85 @@
 		<Grid Grid.Row="2" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
 			<Grid Grid.Column="0" RowDefinitions="95*, 5*">
-				<ListBox Grid.Row="0" Background="LightCyan"></ListBox>
+				<ListBox Grid.Row="0" Background="LightCyan">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<UniformGrid Columns="2"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+					<ListBox.Items>
+						<Grid ColumnDefinitions="90*, 10*" Height="166">
+							<!--информация-->
+							<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*">
+								<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>
+								
+								<StackPanel Grid.Row="0">
+									<TextBlock>наименование</TextBlock>
+									<TextBlock>...</TextBlock>
+								</StackPanel>
+								<StackPanel Grid.Row="1">
+									<TextBlock>метка/и</TextBlock>
+									<TextBlock>...</TextBlock>
+								</StackPanel>
+								<StackPanel Grid.Row="2">
+									<TextBlock>Колво</TextBlock>
+								</StackPanel>
+							</Grid>
+
+							<!--кнопки редактирования и удаления-->
+							<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+								<StackPanel Grid.Row="0">
+									<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+									<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+								</StackPanel>
+							</Grid>
+						</Grid>
+					</ListBox.Items>
+				</ListBox>
 				<Button Grid.Row="1">Добавить ПЭЗ</Button>
 			</Grid>
 			
 			<!--Правая часть-->
 			<Grid Grid.Column="1" RowDefinitions="7*, 93*">
-				<ComboBox Grid.Row="0"></ComboBox>
-				<ListBox Grid.Row="1" Background="LightGray"></ListBox>
+				<Grid Grid.Row="0" ColumnDefinitions="86*, 7*, 7*">
+					<ComboBox Grid.Column="0"></ComboBox>
+					<Image Grid.Column="1" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
+					<Image Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
+				</Grid>
+				
+				<ListBox Grid.Row="1" Background="LightGray">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<UniformGrid Columns="2"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+					<ListBox.Items>
+						<Grid ColumnDefinitions="90*, 10*" Height="166">
+							<!--информация-->
+							<Grid Grid.Column="0" RowDefinitions="25*, 25*, 25*, 25*">
+								<Border Grid.Row="0" BorderThickness="3" BorderBrush="Aqua"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Beige"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Crimson"></Border>
+								<Border Grid.Row="3" BorderThickness="3" BorderBrush="OliveDrab"></Border>
+
+								<StackPanel Grid.Row="0">
+									<TextBlock>наименование</TextBlock>
+									<TextBlock>...</TextBlock>
+								</StackPanel>
+								<TextBlock Grid.Row="1">Аналоги (наверное один, не поняла)</TextBlock>
+								<TextBlock Grid.Row="2">Категория (которая подкатегория)</TextBlock>
+								<TextBlock Grid.Row="3">Примечание</TextBlock>
+							</Grid>
+
+							<!--единицы измерения-->
+							<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+								<TextBlock TextWrapping="Wrap" Grid.Row="0">Ед изм</TextBlock>
+							</Grid>
+						</Grid>
+					</ListBox.Items>
+				</ListBox>
 			</Grid>
 		</Grid>
 	</Grid>
