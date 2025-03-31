@@ -4,8 +4,10 @@ using BK_Details_App.Models;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,15 +16,92 @@ namespace BK_Details_App.ViewModels
     internal class DetailsVM : ViewModelBase
     {
         List<Materials> _materialsList = new();
-        public List<Materials> MaterialsList { get => _materialsList; set => this.RaiseAndSetIfChanged(ref _materialsList, value); }
+        public List<Materials> MaterialsList 
+        { 
+            get => _materialsList;
+            set => this.RaiseAndSetIfChanged(ref _materialsList, value);
+        }
+        List<Materials> _filteredMaterials = new();
+        public List<Materials> FilteredMaterials { get => _filteredMaterials; set => this.RaiseAndSetIfChanged(ref _filteredMaterials, value); }
+
         List<Groups> _groupsList = new();
         public List<Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
+        Groups _selectedGroup = new();
+        public Groups SelectedGroup { get => _selectedGroup; set { this.RaiseAndSetIfChanged(ref _selectedGroup, value); FilterMaterials(); FilterCategories(); } }
+
         List<Category> _categoriesList = new();
         public List<Category> CategoriesList { get => _categoriesList; set => this.RaiseAndSetIfChanged(ref _categoriesList, value); }
+        List<Category> _filteredCategories = new();
+        public List<Category> FilteredCategories { get => _filteredCategories; set => this.RaiseAndSetIfChanged(ref _filteredCategories, value); }
+        Category _selectedCategory = new();
+        public Category SelectedCategory { get => _selectedCategory; set { this.RaiseAndSetIfChanged(ref _selectedCategory, value); FilterMaterials(); } }
+
+        string _searchMaterials;
+        public string SearchMaterials { get { return _searchMaterials; } set { _searchMaterials = value; FilterMaterials(); } }
+
+        bool _isAscending = false;
+        public bool IsAscending
+        {
+            get => _isAscending;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _isAscending, value);
+                FilterMaterials();
+            }
+        }
 
         public DetailsVM()
         {
             ReadFromExcelFile();
+            SelectedGroup = _groupsList[0];            
+            SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();            
+        }
+
+        public void FilterMaterials()
+        {
+            FilteredMaterials = MaterialsList.ToList();
+
+            if (!string.IsNullOrWhiteSpace(_searchMaterials))
+            {
+                FilteredMaterials = FilteredMaterials.Where(x => x.Name.ToLower().Contains(_searchMaterials.ToLower())).ToList();
+            }
+
+            if (_selectedGroup != null)
+            {
+                FilteredMaterials = FilteredMaterials.Where(x => x.GroupNavigation == SelectedGroup).ToList();
+            }
+
+            if (_selectedCategory != null)
+            {
+                FilteredMaterials = FilteredMaterials.Where(x => x.CategoryNavigation == SelectedCategory).ToList();
+            }
+
+            if (_isAscending)
+            {
+                FilteredMaterials = new (
+                    FilteredMaterials.OrderBy(x => x.Name)
+                );
+            }
+            else
+            {
+                FilteredMaterials = new (
+                    FilteredMaterials.OrderByDescending(x => x.Name)
+                );
+            }
+        }
+
+        public void FilterCategories()
+        {
+            if (SelectedGroup != null)
+            {
+                FilteredCategories = new (CategoriesList.Where(x => x.GroupNavigation == SelectedGroup));
+            }
+            else
+            {
+                FilteredCategories = new (CategoriesList);
+            }
+
+            SelectedCategory = FilteredCategories.FirstOrDefault();
         }
 
         public void ReadFromExcelFile()
@@ -40,15 +119,12 @@ namespace BK_Details_App.ViewModels
                 // Получить рабочий лист, используя его индекс
                 Worksheet worksheet = collection[worksheetIndex];
                 if (worksheet.Name == "Крепёж" || worksheet.Name == "Электромонт") continue;
-                //if (_groupsList.FirstOrDefault(x => x.Name == worksheet.Name) is null) //если такой группы еще нет, создать объект и добавить ее
-                //{
-                    Groups groups = new Groups() 
-                    { 
-                        GroupIdNumber = random.Next(1, 1000), 
-                        Name = worksheet.Name 
-                    };
-                    _groupsList.Add(groups);
-                //}
+                Groups groups = new Groups() 
+                { 
+                    GroupIdNumber = random.Next(1, 1000), 
+                    Name = worksheet.Name 
+                };
+                _groupsList.Add(groups);
 
                 // Получить количество строк и столбцов
                 int rows = worksheet.Cells.MaxDataRow;
@@ -77,7 +153,9 @@ namespace BK_Details_App.ViewModels
                             Category category = new Category() 
                             {
                                 CategoryId = random.Next(1, 1000),
-                                Name = cell.StringValue
+                                Name = cell.StringValue,
+                                GroupNavigation = _groupsList[_groupsList.Count - 1],
+                                Group = _groupsList[_groupsList.Count - 1].GroupIdNumber
                             };
                             _categoriesList.Add(category);
 

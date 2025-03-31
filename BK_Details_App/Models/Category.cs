@@ -10,6 +10,8 @@ namespace BK_Details_App.Models
     {
         public int CategoryId { get; set; }
         public string Name { get; set; }
+        public int Group { get; set; }
+        public virtual Groups GroupNavigation { get; set; } = null!;
         public virtual ICollection<Materials> Materials { get; set; } = new List<Materials>();
     }
 }

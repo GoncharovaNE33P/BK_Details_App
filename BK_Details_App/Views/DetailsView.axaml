@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="using:BK_Details_App.ViewModels"
-			 xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -13,8 +12,9 @@
 		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>-->
 
 		<!--Верхняя панель с лого и кнопками-->
-		<Grid Grid.Row="0" ColumnDefinitions="20*, 53*, Auto, Auto">
+		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto, Auto">
 			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
+			<!--<Border Grid.Column="1" BorderThickness="3" BorderBrush="LawnGreen"></Border>-->
 			<TextBlock Classes="HeadPage" Grid.Column="1">Просмотр материалов</TextBlock>
 			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="0 10 20 10" HorizontalAlignment="Right">Выбрать файл для сравнения</Button>
 			<Button Classes="ChooseUploadFile" Grid.Column="3" Margin="0 10 20 10" HorizontalAlignment="Right">Выгрузить результат в Excel</Button>
@@ -35,9 +35,18 @@
 			<Grid Grid.Column="1" ColumnDefinitions="3*, Auto" RowDefinitions="*,*">
 				<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
 						 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-						 TextWrapping="Wrap"></TextBox>
-				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка"></ComboBox>
-				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация"></ComboBox>
+						 TextWrapping="Wrap" Text="{Binding SearchMaterials}"></TextBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка" SelectedIndex="{Binding IsAscending}">
+					<ComboBox.Items>От А до Я</ComboBox.Items>
+					<ComboBox.Items>От Я до А</ComboBox.Items>
+				</ComboBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация" ItemsSource="{Binding FilteredCategories}" SelectedItem="{Binding SelectedCategory}">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}"></TextBlock>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
 			</Grid>
 		</Grid>
 		
@@ -269,41 +278,49 @@
 			<!--Правая часть-->
 			<Grid Grid.Column="1" RowDefinitions="Auto, 93*">
 				<Grid Grid.Row="0" ColumnDefinitions="86*, 7*, 7*">
-					<ComboBox Classes="ChoiceGroup" Grid.Column="0" HorizontalAlignment="Stretch"></ComboBox>
+					<ComboBox Classes="ChoiceGroup" Grid.Column="0" HorizontalAlignment="Stretch" ItemsSource="{Binding GroupsList}" SelectedItem="{Binding SelectedGroup}">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}"></TextBlock>
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
 					<Image Classes="FavoritesButton" Grid.Column="1" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
 					<Image Classes="FavoritesButton" Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
 				</Grid>
 				
-				<ListBox Grid.Row="1" Background="LightGray">
+				<ListBox Grid.Row="1" Background="LightGray" ItemsSource="{Binding FilteredMaterials}">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<UniformGrid Columns="2"/>
 						</ItemsPanelTemplate>
 					</ListBox.ItemsPanel>
-					<ListBox.Items>
-						<Grid ColumnDefinitions="90*, 10*" Height="166">
-							<!--информация-->
-							<Grid Grid.Column="0" RowDefinitions="25*, 25*, 25*, 25*">
-								<Border Grid.Row="0" BorderThickness="3" BorderBrush="Aqua"></Border>
-								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Beige"></Border>
-								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Crimson"></Border>
-								<Border Grid.Row="3" BorderThickness="3" BorderBrush="OliveDrab"></Border>
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid ColumnDefinitions="90*, 10*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="25*, 25*, 25*, 25*">
+									<Border Grid.Row="0" BorderThickness="3" BorderBrush="Aqua"></Border>
+									<Border Grid.Row="1" BorderThickness="3" BorderBrush="Beige"></Border>
+									<Border Grid.Row="2" BorderThickness="3" BorderBrush="Crimson"></Border>
+									<Border Grid.Row="3" BorderThickness="3" BorderBrush="OliveDrab"></Border>
 
-								<StackPanel Grid.Row="0">
-									<TextBlock>наименование</TextBlock>
-									<TextBlock>...</TextBlock>
-								</StackPanel>
-								<TextBlock Grid.Row="1">Аналоги (наверное один, не поняла)</TextBlock>
-								<TextBlock Grid.Row="2">Категория (которая подкатегория)</TextBlock>
-								<TextBlock Grid.Row="3">Примечание</TextBlock>
-							</Grid>
+									<StackPanel Grid.Row="0">
+										<TextBlock>Наименование</TextBlock>
+										<TextBlock Text="{Binding Name}"></TextBlock>
+									</StackPanel>
+									<TextBlock Grid.Row="1" Text="{Binding Analogs}"></TextBlock>
+									<TextBlock Grid.Row="2" Text="{Binding CategoryNavigation.Name}"></TextBlock>
+									<TextBlock Grid.Row="3" Text="{Binding Note}"></TextBlock>
+								</Grid>
 
-							<!--единицы измерения-->
-							<Grid Grid.Column="1" RowDefinitions="50*, 50*">
-								<TextBlock TextWrapping="Wrap" Grid.Row="0">Ед изм</TextBlock>
+								<!--единицы измерения-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<TextBlock TextWrapping="Wrap" Grid.Row="0" Text="{Binding Measurement}"></TextBlock>
+								</Grid>
 							</Grid>
-						</Grid>
-					</ListBox.Items>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
 				</ListBox>
 			</Grid>
 		</Grid>
