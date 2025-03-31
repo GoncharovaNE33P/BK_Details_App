@@ -13,34 +13,17 @@
 		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>
 
 		<!--Верхняя панель с лого и кнопками-->
-		<Grid Grid.Row="0" ColumnDefinitions="20*, 52*, Auto, Auto">
+		<Grid Grid.Row="0" ColumnDefinitions="20*, 53*, Auto, Auto">
 			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
 			<TextBlock Classes="HeadPage" Grid.Column="1">Просмотр материалов</TextBlock>
-			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="0 10 10 10" HorizontalAlignment="Right">Выбрать файл для сравнения</Button>
-			<Button Classes="ChooseUploadFile" Grid.Column="3" Margin="0 10 10 10" HorizontalAlignment="Right">Выгрузить результат в Excel</Button>
+			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="0 10 20 10" HorizontalAlignment="Right">Выбрать файл для сравнения</Button>
+			<Button Classes="ChooseUploadFile" Grid.Column="3" Margin="0 10 20 10" HorizontalAlignment="Right">Выгрузить результат в Excel</Button>
 		</Grid>
 		
-		<!--Поиск, сортировка и фильтрация--><!--
-		<Grid Grid.Row="1" RowDefinitions="50*, 50*" ColumnDefinitions="50*, 50*">
-			--><!--Левая часть--><!--
-			<TextBox Classes="Search" Grid.Row="0" Grid.Column="0"></TextBox>
-			<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
-				<ComboBox Classes="Choice" PlaceholderText="Сортировка"></ComboBox>
-				<ComboBox Classes="Choice" PlaceholderText="Фильтрация"></ComboBox>
-			</StackPanel>
-			
-			--><!--Правая часть--><!--
-			<TextBox Classes="Search" Grid.Row="0" Grid.Column="1" ></TextBox>
-			<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-				<ComboBox Classes="Choice" PlaceholderText="Сортировка"></ComboBox>
-				<ComboBox Classes="Choice" PlaceholderText="Фильтрация"></ComboBox>
-			</StackPanel>
-		</Grid>-->
-
 		<!--Поиск, сортировка и фильтрация-->
 		<Grid Grid.Row="1" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
-			<Grid Grid.Column="0" ColumnDefinitions="1.5*, 3*" RowDefinitions="*,*">
+			<Grid Grid.Column="0" ColumnDefinitions="3*, Auto" RowDefinitions="*,*">
 			<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
 					 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
 					 TextWrapping="Wrap"></TextBox>
@@ -49,7 +32,7 @@
 			</Grid>
 
 			<!--Правая часть-->
-			<Grid Grid.Column="1" ColumnDefinitions="1.5*, 3*" RowDefinitions="*,*">
+			<Grid Grid.Column="1" ColumnDefinitions="3*, Auto" RowDefinitions="*,*">
 				<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
 						 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
 						 TextWrapping="Wrap"></TextBox>
