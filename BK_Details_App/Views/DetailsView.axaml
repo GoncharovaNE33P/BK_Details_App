@@ -13,9 +13,9 @@
 		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>
 
 		<!--Верхняя панель с лого и кнопками-->
-		<Grid Grid.Row="0" ColumnDefinitions="15*, 49*, 18*, 18*">
+		<Grid Grid.Row="0" ColumnDefinitions="20*, 49*, 18*, 18*">
 			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
-			<TextBlock Grid.Column="1">Просмотр материалов</TextBlock>
+			<TextBlock Classes="HeadPage" Grid.Column="1">Просмотр материалов</TextBlock>
 			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="10">Выбрать файл для сравнения</Button>
 			<Button Classes="ChooseUploadFile" Grid.Column="3" Margin="10">Выгрузить результат в Excel</Button>
 		</Grid>
@@ -23,24 +23,24 @@
 		<!--Поиск, сортировка и фильтрация-->
 		<Grid Grid.Row="1" RowDefinitions="50*, 50*" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
-			<TextBox Grid.Row="0" Grid.Column="0" Watermark="Поиск..."></TextBox>
+			<TextBox Classes="Search" Grid.Row="0" Grid.Column="0"></TextBox>
 			<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal">
-				<ComboBox Width="170"></ComboBox>
-				<ComboBox Width="170"></ComboBox>
+				<ComboBox Classes="Choice" PlaceholderText="Сортировка"></ComboBox>
+				<ComboBox Classes="Choice" PlaceholderText="Фильтрация"></ComboBox>
 			</StackPanel>
 			
 			<!--Правая часть-->
-			<TextBox Grid.Row="0" Grid.Column="1" Watermark="Поиск..."></TextBox>
+			<TextBox Classes="Search" Grid.Row="0" Grid.Column="1" ></TextBox>
 			<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-				<ComboBox Width="170"></ComboBox>
-				<ComboBox Width="170"></ComboBox>
+				<ComboBox Classes="Choice" PlaceholderText="Сортировка"></ComboBox>
+				<ComboBox Classes="Choice" PlaceholderText="Фильтрация"></ComboBox>
 			</StackPanel>
 		</Grid>
 		
 		<!--Панель с файлами-->
 		<Grid Grid.Row="2" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
-			<Grid Grid.Column="0" RowDefinitions="95*, 5*">
+			<Grid Grid.Column="0" RowDefinitions="94*, 6*">
 				<ListBox Grid.Row="0" Background="LightCyan">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
@@ -78,15 +78,15 @@
 						</Grid>
 					</ListBox.Items>
 				</ListBox>
-				<Button Grid.Row="1">Добавить ПЭЗ</Button>
+				<Button Classes="ChooseUploadFile" Grid.Row="1">Добавить ПЭЗ</Button>
 			</Grid>
 			
 			<!--Правая часть-->
-			<Grid Grid.Column="1" RowDefinitions="7*, 93*">
+			<Grid Grid.Column="1" RowDefinitions="Auto, 93*">
 				<Grid Grid.Row="0" ColumnDefinitions="86*, 7*, 7*">
-					<ComboBox Grid.Column="0"></ComboBox>
-					<Image Grid.Column="1" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
-					<Image Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
+					<ComboBox Classes="ChoiceGroup" Grid.Column="0"></ComboBox>
+					<Image Classes="FavoritesButton" Grid.Column="1" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
+					<Image Classes="FavoritesButton" Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
 				</Grid>
 				
 				<ListBox Grid.Row="1" Background="LightGray">

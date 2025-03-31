@@ -24,4 +24,47 @@
 		<Setter Property="Background" Value="#5F69B1"></Setter>
 		<Setter Property="Foreground" Value="White"></Setter>
 	</Style>
+
+	<Style Selector="TextBlock">
+		<Setter Property="FontFamily" Value="Bookman Old Style"></Setter>
+	</Style>
+
+	<Style Selector="TextBlock.HeadPage">
+		<Setter Property="FontSize" Value="24"></Setter>
+		<Setter Property="Margin" Value="0 10 0 0"></Setter>
+		<Setter Property="FontWeight" Value="Medium"></Setter>
+	</Style>
+
+	<Style Selector="TextBox.Search">
+		<Setter Property="BorderBrush" Value="#003399"></Setter>
+		<Setter Property="BorderThickness" Value="3"></Setter>
+		<Setter Property="FontSize" Value="15"></Setter>
+		<Setter Property="Height" Value="35"></Setter>
+		<Setter Property="Margin" Value="10"></Setter>
+		<Setter Property="Watermark" Value="Поиск..."></Setter>
+	</Style>
+
+	<Style Selector="ComboBox.Choice">
+		<Setter Property="BorderBrush" Value="#003399"></Setter>
+		<Setter Property="BorderThickness" Value="3"></Setter>
+		<Setter Property="FontSize" Value="15"></Setter>
+		<Setter Property="Height" Value="35"></Setter>
+		<Setter Property="Margin" Value="10 0 10 10"></Setter>
+		<Setter Property="Width" Value="336"></Setter>
+	</Style>
+
+	<Style Selector="ComboBox.ChoiceGroup">
+		<Setter Property="BorderBrush" Value="#003399"></Setter>
+		<Setter Property="BorderThickness" Value="3"></Setter>
+		<Setter Property="FontSize" Value="15"></Setter>
+		<Setter Property="Height" Value="35"></Setter>
+		<Setter Property="Margin" Value="10"></Setter>
+		<Setter Property="Width" Value="600"></Setter>
+		<Setter Property="PlaceholderText" Value="Группы материалов"></Setter>
+	</Style>
+
+	<Style Selector="Image.FavoritesButton">
+		<Setter Property="Height" Value="42"></Setter>		
+		<Setter Property="Width" Value="42"></Setter>		
+	</Style>
 </Styles>
