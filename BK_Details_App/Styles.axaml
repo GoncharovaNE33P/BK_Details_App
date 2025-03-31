@@ -55,7 +55,7 @@
 		<Setter Property="FontSize" Value="15"></Setter>
 		<Setter Property="Height" Value="35"></Setter>
 		<Setter Property="Margin" Value="10 0 10 10"></Setter>
-		<Setter Property="Width" Value="336"></Setter>
+		<Setter Property="Width" Value="300"></Setter>
 	</Style>
 
 	<Style Selector="ComboBox.ChoiceGroup">

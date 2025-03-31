@@ -40,21 +40,21 @@
 		<!--Поиск, сортировка и фильтрация-->
 		<Grid Grid.Row="1" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
-			<Grid Grid.Column="0" ColumnDefinitions="1.5*, 3*">
-			<TextBox Classes="Search" Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="WrapWithOverflow" ></TextBox>
-			<StackPanel Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10">
-				<ComboBox Classes="Choice" PlaceholderText="Сортировка"></ComboBox>
-				<ComboBox Classes="Choice" PlaceholderText="Фильтрация"></ComboBox>
-			</StackPanel>
+			<Grid Grid.Column="0" ColumnDefinitions="1.5*, 3*" RowDefinitions="*,*">
+			<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
+					 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+					 TextWrapping="Wrap"></TextBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка"></ComboBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация"></ComboBox>
 			</Grid>
 
 			<!--Правая часть-->
-			<Grid Grid.Column="1" ColumnDefinitions="1.5*, 3*">
-				<TextBox Classes="Search" Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="WrapWithOverflow"></TextBox>
-				<StackPanel Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10">
-					<ComboBox Classes="Choice" PlaceholderText="Сортировка"></ComboBox>
-					<ComboBox Classes="Choice" PlaceholderText="Фильтрация"></ComboBox>
-				</StackPanel>
+			<Grid Grid.Column="1" ColumnDefinitions="1.5*, 3*" RowDefinitions="*,*">
+				<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
+						 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+						 TextWrapping="Wrap"></TextBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка"></ComboBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация"></ComboBox>
 			</Grid>
 		</Grid>
 		
