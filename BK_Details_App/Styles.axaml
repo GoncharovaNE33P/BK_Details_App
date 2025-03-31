@@ -27,6 +27,12 @@
 		<Setter Property="Foreground" Value="White"></Setter>
 	</Style>
 
+	<Style Selector="Border.ItemsLeft">
+		<Setter Property="BorderBrush" Value="#CCCCCC"></Setter>
+		<Setter Property="BorderThickness" Value="3"></Setter>
+		<Setter Property="CornerRadius" Value="3"></Setter>
+	</Style>
+
 	<Style Selector="TextBlock">
 		<Setter Property="FontFamily" Value="Bookman Old Style"></Setter>
 	</Style>
@@ -47,6 +53,12 @@
 		<Setter Property="Height" Value="35"></Setter>
 		<Setter Property="Margin" Value="10"></Setter>
 		<Setter Property="Watermark" Value="Поиск..."></Setter>
+	</Style>
+
+	<Style Selector="TextBlock.Name">
+		<Setter Property="FontSize" Value="15"></Setter>
+		<Setter Property="Height" Value="40"></Setter>
+		<Setter Property="TextWrapping" Value="Wrap"></Setter>
 	</Style>
 
 	<Style Selector="ComboBox.Choice">

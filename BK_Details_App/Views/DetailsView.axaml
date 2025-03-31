@@ -8,9 +8,9 @@
              x:Class="BK_Details_App.DetailsView"
 			 x:DataType="vm:DetailsVM">
 	<Grid RowDefinitions="7*, Auto, 78*">
-		<Border Grid.Row="0" BorderThickness="3" BorderBrush="LightSteelBlue"></Border>
+		<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="LightSteelBlue"></Border>
 		<Border Grid.Row="1" BorderThickness="3" BorderBrush="LawnGreen"></Border>
-		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>
+		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>-->
 
 		<!--Верхняя панель с лого и кнопками-->
 		<Grid Grid.Row="0" ColumnDefinitions="20*, 53*, Auto, Auto">
@@ -45,27 +45,27 @@
 		<Grid Grid.Row="2" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
 			<Grid Grid.Column="0" RowDefinitions="94*, 6*">
-				<ListBox Grid.Row="0" Background="LightCyan">
+				<Border Grid.Row="1" Background="#003399"></Border>
+				<ListBox Grid.Row="0" Background="Transparent">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<UniformGrid Columns="2"/>
 						</ItemsPanelTemplate>
 					</ListBox.ItemsPanel>
 					<ListBox.Items>
-						<Grid ColumnDefinitions="90*, 10*" Height="166">
+						<Border Classes="ItemsLeft">
+						<Grid ColumnDefinitions="80*, 20*" Height="166">
 							<!--информация-->
-							<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*">
-								<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+							<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+								<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
 								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
-								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
 								
 								<StackPanel Grid.Row="0">
-									<TextBlock>наименование</TextBlock>
-									<TextBlock>...</TextBlock>
+									<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
 								</StackPanel>
 								<StackPanel Grid.Row="1">
-									<TextBlock>метка/и</TextBlock>
-									<TextBlock>...</TextBlock>
+									<TextBlock Classes="Name">метка/и</TextBlock>
 								</StackPanel>
 								<StackPanel Grid.Row="2">
 									<TextBlock>Колво</TextBlock>
@@ -80,6 +80,187 @@
 								</StackPanel>
 							</Grid>
 						</Grid>
+						</Border>
+					</ListBox.Items>
+					<ListBox.Items>
+						<Border Classes="ItemsLeft">
+							<Grid ColumnDefinitions="80*, 20*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+									<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
+
+									<StackPanel Grid.Row="0">
+										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="1">
+										<TextBlock Classes="Name">метка/и</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="2">
+										<TextBlock>Колво</TextBlock>
+									</StackPanel>
+								</Grid>
+
+								<!--кнопки редактирования и удаления-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<StackPanel Grid.Row="0">
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+									</StackPanel>
+								</Grid>
+							</Grid>
+						</Border>
+					</ListBox.Items>
+					<ListBox.Items>
+						<Border Classes="ItemsLeft">
+							<Grid ColumnDefinitions="80*, 20*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+									<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
+
+									<StackPanel Grid.Row="0">
+										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="1">
+										<TextBlock Classes="Name">метка/и</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="2">
+										<TextBlock>Колво</TextBlock>
+									</StackPanel>
+								</Grid>
+
+								<!--кнопки редактирования и удаления-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<StackPanel Grid.Row="0">
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+									</StackPanel>
+								</Grid>
+							</Grid>
+						</Border>
+					</ListBox.Items>
+					<ListBox.Items>
+						<Border Classes="ItemsLeft">
+							<Grid ColumnDefinitions="80*, 20*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+									<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
+
+									<StackPanel Grid.Row="0">
+										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="1">
+										<TextBlock Classes="Name">метка/и</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="2">
+										<TextBlock>Колво</TextBlock>
+									</StackPanel>
+								</Grid>
+
+								<!--кнопки редактирования и удаления-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<StackPanel Grid.Row="0">
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+									</StackPanel>
+								</Grid>
+							</Grid>
+						</Border>
+					</ListBox.Items>
+					<ListBox.Items>
+						<Border Classes="ItemsLeft">
+							<Grid ColumnDefinitions="80*, 20*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+									<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
+
+									<StackPanel Grid.Row="0">
+										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="1">
+										<TextBlock Classes="Name">метка/и</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="2">
+										<TextBlock>Колво</TextBlock>
+									</StackPanel>
+								</Grid>
+
+								<!--кнопки редактирования и удаления-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<StackPanel Grid.Row="0">
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+									</StackPanel>
+								</Grid>
+							</Grid>
+						</Border>
+					</ListBox.Items>
+					<ListBox.Items>
+						<Border Classes="ItemsLeft">
+							<Grid ColumnDefinitions="80*, 20*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+									<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
+
+									<StackPanel Grid.Row="0">
+										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="1">
+										<TextBlock Classes="Name">метка/и</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="2">
+										<TextBlock>Колво</TextBlock>
+									</StackPanel>
+								</Grid>
+
+								<!--кнопки редактирования и удаления-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<StackPanel Grid.Row="0">
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+									</StackPanel>
+								</Grid>
+							</Grid>
+						</Border>
+					</ListBox.Items>
+					<ListBox.Items>
+						<Border Classes="ItemsLeft">
+							<Grid ColumnDefinitions="80*, 20*" Height="166">
+								<!--информация-->
+								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+									<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="Khaki"></Border>
+								<Border Grid.Row="1" BorderThickness="3" BorderBrush="Indigo"></Border>
+								<Border Grid.Row="2" BorderThickness="3" BorderBrush="Yellow"></Border>-->
+
+									<StackPanel Grid.Row="0">
+										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="1">
+										<TextBlock Classes="Name">метка/и</TextBlock>
+									</StackPanel>
+									<StackPanel Grid.Row="2">
+										<TextBlock>Колво</TextBlock>
+									</StackPanel>
+								</Grid>
+
+								<!--кнопки редактирования и удаления-->
+								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+									<StackPanel Grid.Row="0">
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+									</StackPanel>
+								</Grid>
+							</Grid>
+						</Border>
 					</ListBox.Items>
 				</ListBox>
 				<Button Classes="ChooseUploadFile" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
