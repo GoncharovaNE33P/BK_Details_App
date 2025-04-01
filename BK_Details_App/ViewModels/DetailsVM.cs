@@ -13,7 +13,6 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ExcelDataReader;
-using CsvHelper;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls;
 using Avalonia;
@@ -70,7 +69,8 @@ namespace BK_Details_App.ViewModels
                 ReadFromExcelFile();
                 SelectedGroup = _groupsList[0];
                 SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
-                ReadFavorites();
+                //ReadFavorites();
+                Favs = ReadFavorites();
             }
             catch(Exception ex)
             {
@@ -261,50 +261,105 @@ namespace BK_Details_App.ViewModels
 
         }
 
-        public void ReadFavorites()
-        {
-            string filePath = "fav.bin";
+        //public void ReadFavorites()
+        //{
+        //    string filePath = "fav.bin";
 
-            if (File.Exists(filePath))
+        //    if (File.Exists(filePath))
+        //    {
+        //        using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
+        //        {
+        //            while (reader.BaseStream.Position < reader.BaseStream.Length)
+        //            {
+        //                string str = reader.ReadString();
+        //                if (!Favs.Contains(str)) Favs.Add(str);
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("Файл не найден.");
+        //    }
+        //}
+
+        public List<string> ReadFavorites()
+        {
+            List<string> values = new List<string>();
+            string filePath = "test.xlsx";
+
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("Файл не найден", filePath);
+
+            Workbook workbook = new Workbook(filePath);
+            Worksheet sheet = workbook.Worksheets["Избранное"];
+
+            if (sheet == null)
+                throw new ArgumentException("Лист не найден");
+
+            int rowCount = sheet.Cells.MaxDataRow;
+
+            for (int i = 0; i <= rowCount; i++)
             {
-                using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
-                {
-                    while (reader.BaseStream.Position < reader.BaseStream.Length)
-                    {
-                        string str = reader.ReadString();
-                        if (!Favs.Contains(str)) Favs.Add(str);
-                    }
-                }
+                string cellValue = sheet.Cells[i, 0].StringValue; // Читаем первую колонку
+                if (!string.IsNullOrEmpty(cellValue))
+                    values.Add(cellValue);
             }
-            else
-            {
-                Console.WriteLine("Файл не найден.");
-            }
+
+            return values;
         }
 
         public void AddToFavorite(string _material)
         {
-            string filePath = "fav.bin";
+            string filePath = "test.xlsx";
 
             if (Favs.Any(x => x == _material))
             {
+                MessageBoxManager.GetMessageBoxStandard("Внимание", _material + " уже в избранном", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
                 return; //!!!!!!!!!!!!!!!!!!!!!!!!!!сказать что уже в избранном
             }
             else
             {
-                using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    fs.Seek(0, SeekOrigin.End); // Переход в конец файла перед записью
+                //using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+                //{
+                //    fs.Seek(0, SeekOrigin.End); // Переход в конец файла перед записью
 
-                    using (BinaryWriter writer = new BinaryWriter(fs))
-                    {
-                        writer.Write(_material);
-                    }
+                //    using (BinaryWriter writer = new BinaryWriter(fs))
+                //    {
+                //        writer.Write(_material);
+                //    }
+                //}
+
+                // Проверяем, существует ли файл
+                Workbook workbook;
+                if (File.Exists(filePath))
+                {
+                    workbook = new Workbook(filePath);
                 }
+                else
+                {
+                    workbook = new Workbook();
+                }
+
+                string sheetName = "Избранное";
+                Worksheet sheet = workbook.Worksheets[sheetName];
+                if (sheet == null)
+                {
+                    int sheetIndex = workbook.Worksheets.Add();
+                    sheet = workbook.Worksheets[sheetIndex];
+                    sheet.Name = sheetName;
+                }
+
+                // Определяем первую пустую строку
+                int lastRow = sheet.Cells.MaxDataRow + 1;
+                sheet.Cells[lastRow, 0].PutValue(_material);
+
+                // Сохраняем файл
+                workbook.Save(filePath);
             }
 
-            ReadFavorites();
-            MainWindowViewModel.Instance.Us = new();
+            //ReadFavorites();
+            Favs = ReadFavorites();
+            MainWindowViewModel.Instance.Us = new FavouriteGroups();
         }
     }
 }
