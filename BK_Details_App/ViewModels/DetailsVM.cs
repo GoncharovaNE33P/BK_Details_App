@@ -1,6 +1,8 @@
 ﻿using Aspose.Cells;
 using Avalonia.Styling;
 using BK_Details_App.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MsBox.Avalonia;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,7 @@ namespace BK_Details_App.ViewModels
 {
     internal class DetailsVM : ViewModelBase
     {
+        #region properties
         List<Materials> _materialsList = new();
         public List<Materials> MaterialsList 
         { 
@@ -50,61 +53,89 @@ namespace BK_Details_App.ViewModels
             }
         }
 
+        List<string> _favs = new();
+        public List<string> Favs { get => _favs; set => this.RaiseAndSetIfChanged(ref _favs, value); }
+        #endregion
+
         public DetailsVM()
         {
-            ReadFromExcelFile();
-            SelectedGroup = _groupsList[0];            
-            SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();            
+            try
+            {
+                ReadFromExcelFile();
+                SelectedGroup = _groupsList[0];
+                SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
+                ReadFavorites();
+            }
+            catch(Exception ex)
+            {
+                MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+            }       
         }
 
-        public void FilterMaterials()
+        #region filters
+        void FilterMaterials()
         {
-            FilteredMaterials = MaterialsList.ToList();
+            try
+            {
+                FilteredMaterials = MaterialsList.ToList();
 
-            if (!string.IsNullOrWhiteSpace(_searchMaterials))
-            {
-                FilteredMaterials = FilteredMaterials.Where(x => x.Name.ToLower().Contains(_searchMaterials.ToLower())).ToList();
-            }
+                if (!string.IsNullOrWhiteSpace(_searchMaterials))
+                {
+                    FilteredMaterials = FilteredMaterials.Where(x => x.Name.ToLower().Contains(_searchMaterials.ToLower())).ToList();
+                }
 
-            if (_selectedGroup != null)
-            {
-                FilteredMaterials = FilteredMaterials.Where(x => x.GroupNavigation == SelectedGroup).ToList();
-            }
+                if (_selectedGroup != null)
+                {
+                    FilteredMaterials = FilteredMaterials.Where(x => x.GroupNavigation == SelectedGroup).ToList();
+                }
 
-            if (_selectedCategory != null)
-            {
-                FilteredMaterials = FilteredMaterials.Where(x => x.CategoryNavigation == SelectedCategory).ToList();
-            }
+                if (_selectedCategory != null)
+                {
+                    FilteredMaterials = FilteredMaterials.Where(x => x.CategoryNavigation == SelectedCategory).ToList();
+                }
 
-            if (!_isAscending)
-            {
-                FilteredMaterials = new (
-                    FilteredMaterials.OrderBy(x => x.Name)
-                );
+                if (!_isAscending)
+                {
+                    FilteredMaterials = new(
+                        FilteredMaterials.OrderBy(x => x.Name)
+                    );
+                }
+                else
+                {
+                    FilteredMaterials = new(
+                        FilteredMaterials.OrderByDescending(x => x.Name)
+                    );
+                }
             }
-            else
+            catch(Exception ex)
             {
-                FilteredMaterials = new (
-                    FilteredMaterials.OrderByDescending(x => x.Name)
-                );
+                MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
             }
         }
 
-        public void FilterCategories()
+        void FilterCategories()
         {
-            if (SelectedGroup != null)
+            try
             {
-                FilteredCategories = new (CategoriesList.Where(x => x.GroupNavigation == SelectedGroup));
-            }
-            else
-            {
-                FilteredCategories = new (CategoriesList);
-            }
+                if (SelectedGroup != null)
+                {
+                    FilteredCategories = new(CategoriesList.Where(x => x.GroupNavigation == SelectedGroup));
+                }
+                else
+                {
+                    FilteredCategories = new(CategoriesList);
+                }
 
-            SelectedCategory = FilteredCategories.FirstOrDefault();
+                SelectedCategory = FilteredCategories.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+            }
         }
+        #endregion
 
-        public void ReadFromExcelFile()
+        void ReadFromExcelFile()
         {
             // Загрузить файл Excel
             string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
@@ -169,8 +200,8 @@ namespace BK_Details_App.ViewModels
                                 IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue, //в предыдущей ячейке содержится номер
                                 Name = cell.StringValue,
                                 Measurement = worksheet.Cells[i, j + 1].StringValue,
-                                Analogs = worksheet.Cells[i, j + 2].StringValue,
-                                Note = worksheet.Cells[i, j + 3].StringValue,
+                                Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
+                                Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
                                 GroupNavigation = _groupsList[_groupsList.Count - 1],
                                 Group = _groupsList[_groupsList.Count - 1].GroupIdNumber,
                                 CategoryNavigation = _categoriesList[_categoriesList.Count - 1],
@@ -185,6 +216,52 @@ namespace BK_Details_App.ViewModels
                 // переходим на следующий лист
             }
 
+        }
+
+        public void ReadFavorites()
+        {
+            string filePath = "fav.bin";
+
+            if (File.Exists(filePath))
+            {
+                using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
+                    {
+                        string str = reader.ReadString();
+                        if (!Favs.Contains(str)) Favs.Add(str);
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Файл не найден.");
+            }
+        }
+
+        public void AddToFavorite(string _material)
+        {
+            string filePath = "fav.bin";
+
+            if (Favs.Any(x => x == _material))
+            {
+                return; //!!!!!!!!!!!!!!!!!!!!!!!!!!сказать что уже в избранном
+            }
+            else
+            {
+                using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    fs.Seek(0, SeekOrigin.End); // Переход в конец файла перед записью
+
+                    using (BinaryWriter writer = new BinaryWriter(fs))
+                    {
+                        writer.Write(_material);
+                    }
+                }
+            }
+
+            ReadFavorites();
+            MainWindowViewModel.Instance.Us = new();
         }
     }
 }

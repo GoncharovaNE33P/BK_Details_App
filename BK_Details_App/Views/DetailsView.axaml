@@ -288,8 +288,13 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-					<Image Classes="FavoritesButton" Grid.Column="1" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
-					<Image Classes="FavoritesButton" Grid.Column="2" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
+					<Button Background="Transparent" Grid.Column="1" Command="{Binding AddToFavorite}" CommandParameter="{Binding SelectedGroup.Name}">
+						<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
+					</Button>
+					<Button Background="Transparent" Grid.Column="2">
+						<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
+					</Button>
+					
 				</Grid>
 				
 				<ListBox Grid.Row="1" Background="Transparent" ItemsSource="{Binding FilteredMaterials}">
@@ -300,28 +305,37 @@
 					</ListBox.ItemsPanel>
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Grid ColumnDefinitions="90*, 10*" Height="166">
-								<!--информация-->
-								<Grid Grid.Column="0" RowDefinitions="25*, 25*, 25*, 25*">
-									<Border Grid.Row="0" BorderThickness="3" BorderBrush="Aqua"></Border>
-									<Border Grid.Row="1" BorderThickness="3" BorderBrush="Beige"></Border>
-									<Border Grid.Row="2" BorderThickness="3" BorderBrush="Crimson"></Border>
-									<Border Grid.Row="3" BorderThickness="3" BorderBrush="OliveDrab"></Border>
+							<StackPanel Background="Transparent">
+								<StackPanel.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="Добавить в избранное" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+										<MenuItem Header="Редактировать" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+										<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+									</ContextMenu>
+								</StackPanel.ContextMenu>
+								<Grid ColumnDefinitions="90*, 10*" Height="166">
+									<!--информация-->
+									<Grid Grid.Column="0" RowDefinitions="25*, 25*, 25*, 25*">
+										<Border Grid.Row="0" BorderThickness="3" BorderBrush="Aqua"></Border>
+										<Border Grid.Row="1" BorderThickness="3" BorderBrush="Beige"></Border>
+										<Border Grid.Row="2" BorderThickness="3" BorderBrush="Crimson"></Border>
+										<Border Grid.Row="3" BorderThickness="3" BorderBrush="OliveDrab"></Border>
 
-									<StackPanel Grid.Row="0">
-										<TextBlock>Наименование</TextBlock>
-										<TextBlock Text="{Binding Name}"></TextBlock>
-									</StackPanel>
-									<TextBlock Grid.Row="1" Text="{Binding Analogs}"></TextBlock>
-									<TextBlock Grid.Row="2" Text="{Binding CategoryNavigation.Name}"></TextBlock>
-									<TextBlock Grid.Row="3" Text="{Binding Note}"></TextBlock>
-								</Grid>
+										<StackPanel Grid.Row="0">
+											<TextBlock>Наименование</TextBlock>
+											<TextBlock Text="{Binding Name}"></TextBlock>
+										</StackPanel>
+										<TextBlock Grid.Row="1" Text="{Binding Analogs}"></TextBlock>
+										<TextBlock Grid.Row="2" Text="{Binding CategoryNavigation.Name}"></TextBlock>
+										<TextBlock Grid.Row="3" Text="{Binding Note}"></TextBlock>
+									</Grid>
 
-								<!--единицы измерения-->
-								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
-									<TextBlock TextWrapping="Wrap" Grid.Row="0" Text="{Binding Measurement}"></TextBlock>
+									<!--единицы измерения-->
+									<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+										<TextBlock TextWrapping="Wrap" Grid.Row="0" Text="{Binding Measurement}"></TextBlock>
+									</Grid>
 								</Grid>
-							</Grid>
+							</StackPanel>
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>
