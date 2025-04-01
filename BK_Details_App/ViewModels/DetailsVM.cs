@@ -10,6 +10,12 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ExcelDataReader;
+using CsvHelper;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
+using Avalonia;
+using Avalonia.Platform.Storage;
 
 namespace BK_Details_App.ViewModels
 {
@@ -184,6 +190,43 @@ namespace BK_Details_App.ViewModels
                 }
                 // переходим на следующий лист
             }
+
+        }
+
+        private async Task OpenFileAsync()
+        {
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desctop || 
+                desctop.MainWindow?.StorageProvider is not { } provider) throw new NullReferenceException("Провайдер отсутствует");
+
+            OpenFileDialog? dialog = new OpenFileDialog
+            {
+                Title = "Выберите файл Excel",
+                Filters = {
+                    new FileDialogFilter { Name = "Excel Files", Extensions = { "xls", "xlsx" } },
+                    new FileDialogFilter { Name = "CSV Files", Extensions = { "csv" } }
+                }
+            };
+
+            string[]? files = await dialog.ShowAsync(new Window());
+            if (files == null || files.Length == 0) return;
+
+            string filePath = files[0];
+            if (filePath.EndsWith(".csv")) LoadCsv(filePath);
+            else LoadExcel(filePath);
+        }
+
+        private void LoadExcel(string filePath)
+        {
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            using FileStream? stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+            using IExcelDataReader? reader = ExcelReaderFactory.CreateReader(stream);
+
+            var result = reader.AsDataSet();
+            //var t
+        }
+
+        private void LoadCsv(string filePath)
+        {
 
         }
     }
