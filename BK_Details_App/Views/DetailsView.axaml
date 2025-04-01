@@ -12,11 +12,11 @@
 		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>-->
 
 		<!--Верхняя панель с лого и кнопками-->
-		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto, Auto">
+		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto, 20*">
 			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
 			<!--<Border Grid.Column="1" BorderThickness="3" BorderBrush="LawnGreen"></Border>-->
 			<TextBlock Classes="HeadPage" Grid.Column="1">Просмотр материалов</TextBlock>
-			<Button Classes="ChooseUploadFile" Grid.Column="2" Margin="0 10 20 10" HorizontalAlignment="Right">Выбрать файл для сравнения</Button>
+			<Button Classes="ChooseUploadFile" Grid.Column="2" Command="{Binding OpenFileAsync}" Margin="0 10 20 10" HorizontalAlignment="Right">Выбрать файл для сравнения</Button>
 			<Button Classes="ChooseUploadFile" Grid.Column="3" Margin="0 10 20 10" HorizontalAlignment="Right">Выгрузить результат в Excel</Button>
 		</Grid>
 
@@ -26,9 +26,16 @@
 			<Grid Grid.Column="0" ColumnDefinitions="3*, Auto" RowDefinitions="*,*">
 				<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
 						 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-						 TextWrapping="Wrap"></TextBox>
-				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка"></ComboBox>
-				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация"></ComboBox>
+						 TextWrapping="Wrap" Text="{Binding SearchPEZs}"></TextBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка">
+					<ComboBox.Items>От А до Я</ComboBox.Items>
+					<ComboBox.Items>От Я до А</ComboBox.Items>
+				</ComboBox>
+				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация">
+					<ComboBox.Items>От 1 до 10</ComboBox.Items>
+					<ComboBox.Items>От 11 до 20</ComboBox.Items>
+					<ComboBox.Items>От 21 и более</ComboBox.Items>
+				</ComboBox>
 			</Grid>
 
 			<!--Правая часть-->
@@ -56,39 +63,49 @@
 			<Border Grid.Column="0" Classes="ListLeft">
 			<Grid Grid.Column="0" RowDefinitions="94*, 6*" >
 				<Border Grid.Row="1" Background="#003399"></Border>
-				<ListBox Grid.Row="0" Background="Transparent">
+				<ListBox Grid.Row="0" Background="Transparent" ItemsSource="{Binding ListPEZs}">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<UniformGrid Columns="2"/>
 						</ItemsPanelTemplate>
 					</ListBox.ItemsPanel>
-					<ListBox.Items>
-						<Border Classes="ItemsLeft">
-							<Grid ColumnDefinitions="80*, 20*" Height="166">
-								<!--информация-->
-								<Grid Grid.Column="0" RowDefinitions="33*, 34*, 33*" Margin="10">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Border Classes="ItemsLeft">
+								<Grid ColumnDefinitions="80*, 20*" Height="190">
+									<!--информация-->
+									<Grid Grid.Column="0" RowDefinitions="Auto, *, Auto, *, Auto" Margin="10">
 
-									<StackPanel Grid.Row="0">
-										<TextBlock Classes="Name" FontWeight="Medium">наименование</TextBlock>
-									</StackPanel>
-									<StackPanel Grid.Row="1">
-										<TextBlock Classes="Name">метка/и</TextBlock>
-									</StackPanel>
-									<StackPanel Grid.Row="2">
-										<TextBlock>Колво</TextBlock>
-									</StackPanel>
-								</Grid>
+										<StackPanel Grid.Row="0">
+											<TextBlock Classes="Name" Text="Наименование:" Margin="0 0 0 10"></TextBlock>
+										</StackPanel>
+										<ScrollViewer Grid.Row="1" Height="50" Margin="0 0 15 10" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+											    <TextBlock Classes="Name" Text="{Binding Name}" TextWrapping="Wrap"/>
+											</ScrollViewer>
+										<StackPanel Grid.Row="2">
+											<TextBlock Classes="Name" Text="Метка/и:" Margin="0 5 0 0"></TextBlock>
+										</StackPanel>
+										<StackPanel Grid.Row="3">
+											<ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+												<TextBlock Classes="Name" Text="{Binding Mark}" TextWrapping="NoWrap" Margin="0 5 0 15"></TextBlock>
+											</ScrollViewer>
+										</StackPanel>
+										<StackPanel Grid.Row="4">
+											<TextBlock Text="{Binding Quantity, StringFormat='Количество: {0}'}" Margin="0 5 0 0"></TextBlock>
+										</StackPanel>
+									</Grid>
 
-								<!--кнопки редактирования и удаления-->
-								<Grid Grid.Column="1" RowDefinitions="50*, 50*">
-									<StackPanel Grid.Row="0">
-										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
-										<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
-									</StackPanel>
+									<!--кнопки редактирования и удаления-->
+									<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+										<StackPanel Grid.Row="0">
+											<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
+											<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
+										</StackPanel>
+									</Grid>
 								</Grid>
-							</Grid>
-						</Border>
-					</ListBox.Items>
+							</Border>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
 				</ListBox>
 				<Button Classes="ChooseUploadFile" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
 			</Grid>
@@ -105,7 +122,8 @@
 							</DataTemplate>
 						</ComboBox.ItemTemplate>
 					</ComboBox>
-					<Button Background="Transparent" Grid.Column="1" Command="{Binding AddToFavorite}" CommandParameter="{Binding SelectedGroup.Name}">
+					<Button Background="Transparent" Grid.Column="1" CommandParameter="{Binding SelectedGroup.Name}">
+						 <!--Command="{Binding AddToFavorite}"-->
 						<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
 					</Button>
 					<Button Background="Transparent" Grid.Column="2">

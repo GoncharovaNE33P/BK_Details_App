@@ -75,7 +75,6 @@
 
 	<Style Selector="TextBlock.Name">
 		<Setter Property="FontSize" Value="15"></Setter>
-		<Setter Property="Height" Value="40"></Setter>
 		<Setter Property="TextWrapping" Value="Wrap"></Setter>
 	</Style>
 
