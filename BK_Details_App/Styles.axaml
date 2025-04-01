@@ -41,6 +41,16 @@
 		<Setter Property="CornerRadius" Value="3"></Setter>
 	</Style>
 
+	<Style Selector="Border.ListRight">
+		<Setter Property="BorderBrush" Value="#CCCCCC"></Setter>
+		<Setter Property="BorderThickness" Value="0 3 0 0"></Setter>
+	</Style>
+
+	<Style Selector="Border.ListLeft">
+		<Setter Property="BorderBrush" Value="#CCCCCC"></Setter>
+		<Setter Property="BorderThickness" Value="0 3 3 0"></Setter>
+	</Style>
+
 	<Style Selector="TextBlock">
 		<Setter Property="FontFamily" Value="Bookman Old Style"></Setter>
 	</Style>
