@@ -51,8 +51,8 @@
 		<Setter Property="BorderThickness" Value="0 3 3 0"></Setter>
 	</Style>
 
-	<Style Selector="TextBlock">
-		<Setter Property="FontFamily" Value="Bookman Old Style"></Setter>
+	<Style Selector="TextBlock">		
+		<Setter Property="FontFamily" Value="Yi Gothic UI"></Setter>
 	</Style>
 
 	<Style Selector="TextBlock.HeadPage">

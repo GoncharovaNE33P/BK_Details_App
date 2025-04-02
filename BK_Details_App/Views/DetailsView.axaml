@@ -77,10 +77,10 @@
 									<Grid Grid.Column="0" RowDefinitions="Auto, *, Auto, *, Auto" Margin="10">
 
 										<StackPanel Grid.Row="0">
-											<TextBlock Classes="Name" Text="Наименование:" Margin="0 0 0 10"></TextBlock>
+											<TextBlock Classes="Name"  Text="Наименование:" Margin="0 0 0 10"></TextBlock>
 										</StackPanel>
 										<ScrollViewer Grid.Row="1" Height="50" Margin="0 0 15 10" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-											    <TextBlock Classes="Name" Text="{Binding Name}" TextWrapping="Wrap"/>
+											    <TextBlock Classes="Name" FontWeight="Bold" Text="{Binding Name}" TextWrapping="Wrap"/>
 											</ScrollViewer>
 										<StackPanel Grid.Row="2">
 											<TextBlock Classes="Name" Text="Метка/и:" Margin="0 5 0 0"></TextBlock>
@@ -148,28 +148,24 @@
 										<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
 									</ContextMenu>
 								</StackPanel.ContextMenu>
-								<Grid ColumnDefinitions="90*, 10*" Height="166">
-									<!--информация-->
-									<Grid Grid.Column="0" RowDefinitions="25*, 25*, 25*, 25*">
-										<Border Grid.Row="0" BorderThickness="3" BorderBrush="Aqua"></Border>
-										<Border Grid.Row="1" BorderThickness="3" BorderBrush="Beige"></Border>
-										<Border Grid.Row="2" BorderThickness="3" BorderBrush="Crimson"></Border>
-										<Border Grid.Row="3" BorderThickness="3" BorderBrush="OliveDrab"></Border>
+								<Border Classes="ItemsLeft">
+									<Grid ColumnDefinitions="90*, 10*" Height="180" Margin="10">
+										<!--информация-->
+										<Grid Grid.Column="0" RowDefinitions="30*, 25*, 25*, 25*">
 
-										<StackPanel Grid.Row="0">
-											<TextBlock>Наименование</TextBlock>
-											<TextBlock Text="{Binding Name}"></TextBlock>
-										</StackPanel>
-										<TextBlock Grid.Row="1" Text="{Binding Analogs}"></TextBlock>
-										<TextBlock Grid.Row="2" Text="{Binding CategoryNavigation.Name}"></TextBlock>
-										<TextBlock Grid.Row="3" Text="{Binding Note}"></TextBlock>
-									</Grid>
+											<TextBlock Grid.Row="0" FontWeight="Bold" Margin="0 0 5 0" Text="{Binding Name, StringFormat='Наименование: {0}'}" TextWrapping="Wrap"></TextBlock>
+											<TextBlock Grid.Row="1" Margin="0 0 5 0" Text="{Binding Analogs, StringFormat='Аналоги: {0}'}"></TextBlock>
+											<TextBlock Grid.Row="2" Margin="0 0 5 0" Text="{Binding CategoryNavigation.Name}"></TextBlock>
+											<TextBlock Grid.Row="3" Text="{Binding Note, StringFormat='Примечание: {0}'}" TextWrapping="Wrap"></TextBlock>
+										</Grid>
 
-									<!--единицы измерения-->
-									<Grid Grid.Column="1" RowDefinitions="50*, 50*">
-										<TextBlock TextWrapping="Wrap" Grid.Row="0" Text="{Binding Measurement}"></TextBlock>
+										<!--единицы измерения-->
+										<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+											<TextBlock TextWrapping="Wrap" Grid.Row="0" Text="{Binding Measurement}"
+													   HorizontalAlignment="Center" TextAlignment="Center" Margin="5 0 0 0"></TextBlock>
+										</Grid>
 									</Grid>
-								</Grid>
+								</Border>
 							</StackPanel>
 						</DataTemplate>
 					</ListBox.ItemTemplate>

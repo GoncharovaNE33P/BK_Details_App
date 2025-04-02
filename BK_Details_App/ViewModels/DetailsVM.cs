@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using ExcelDataReader;
 using Avalonia.Controls;
 using System.Data;
+using DynamicData;
 
 namespace BK_Details_App.ViewModels
 {
@@ -57,8 +58,11 @@ namespace BK_Details_App.ViewModels
         List<string> _favs = new();
         public List<string> Favs { get => _favs; set => this.RaiseAndSetIfChanged(ref _favs, value); }
 
-        ObservableCollection<PEZ> _listPEZs = new();
-        public ObservableCollection<PEZ> ListPEZs { get => _listPEZs; set => this.RaiseAndSetIfChanged(ref _listPEZs, value); }
+        ObservableCollection<PEZ> _collectionPEZs = new();
+        public ObservableCollection<PEZ> CollectionPEZs { get => _collectionPEZs; set => this.RaiseAndSetIfChanged(ref _collectionPEZs, value); }
+
+        List<PEZ> _listPEZs = new();
+        public List<PEZ> ListPEZs { get => _listPEZs; set => this.RaiseAndSetIfChanged(ref _listPEZs, value); }
 
         private string filePath;
         public string FilePath { get => filePath; set => this.RaiseAndSetIfChanged(ref filePath, value); }
@@ -167,7 +171,8 @@ namespace BK_Details_App.ViewModels
 
             if (!string.IsNullOrWhiteSpace(_searchPEZs))
             {
-
+                ListPEZs = ListPEZs.Where(x => x.Name.ToLower().Contains(_searchPEZs.ToLower())).ToList();
+                CollectionPEZs.AddRange(ListPEZs);
             }
         }
         #endregion
@@ -283,13 +288,13 @@ namespace BK_Details_App.ViewModels
             var result = reader.AsDataSet();
             var table = result.Tables[0];
 
-            ListPEZs.Clear();
+            CollectionPEZs.Clear();
             foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
             {
                 if (row[2].ToString() == "метка" || row[2].ToString() == "заземление") continue;
                 else
                 {
-                    ListPEZs.Add(
+                    CollectionPEZs.Add(
                         new PEZ
                         {
                             IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
@@ -300,6 +305,8 @@ namespace BK_Details_App.ViewModels
                     );
                 }
             }
+            ListPEZs.Clear();
+            ListPEZs = CollectionPEZs.ToList();
         }
 
         private void LoadCsv(string filePath)
@@ -311,7 +318,7 @@ namespace BK_Details_App.ViewModels
             else encoding = Encoding.GetEncoding("Windows-1251");
 
             string[]? lines = File.ReadAllLines(filePath, encoding);
-            ListPEZs.Clear();
+            CollectionPEZs.Clear();
 
             foreach (string? line in lines.Skip(1))
             {
@@ -321,7 +328,7 @@ namespace BK_Details_App.ViewModels
                 if (parts[2] == "метка" || parts[2] == "заземление") continue;
                 else
                 {
-                    ListPEZs.Add(
+                    CollectionPEZs.Add(
                         new PEZ
                         {
                             IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
@@ -332,6 +339,8 @@ namespace BK_Details_App.ViewModels
                     );
                 }
             }
+            ListPEZs.Clear();
+            ListPEZs = CollectionPEZs.ToList();
         }
 
 
