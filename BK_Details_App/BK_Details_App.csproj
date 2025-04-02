@@ -40,12 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\FavouritesView.axaml.cs">
-      <DependentUpon>FavouritesView.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Materials\materials.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

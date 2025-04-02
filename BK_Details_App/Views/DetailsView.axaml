@@ -126,7 +126,7 @@
 						 <!--Command="{Binding AddToFavorite}"-->
 						<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/heart-add.png"></Image>
 					</Button>
-					<Button Background="Transparent" Grid.Column="2">
+					<Button Background="Transparent" Grid.Column="2" Command="{Binding ToFavouritesView}">
 						<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
 					</Button>
 					

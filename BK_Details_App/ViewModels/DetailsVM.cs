@@ -91,7 +91,7 @@ namespace BK_Details_App.ViewModels
                 SelectedGroup = _groupsList[0];
                 SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
                 //ReadFavorites();
-                //Favs = ReadFavorites();
+                Favs = ReadFavorites();
             }
             catch (Exception ex)
             {
@@ -191,7 +191,7 @@ namespace BK_Details_App.ViewModels
             {
                 // Получить рабочий лист, используя его индекс
                 Worksheet worksheet = collection[worksheetIndex];
-                if (worksheet.Name == "Крепёж" || worksheet.Name == "Электромонт") continue;
+                
                 Groups groups = new Groups() 
                 { 
                     GroupIdNumber = random.Next(1, 1000), 
@@ -371,24 +371,27 @@ namespace BK_Details_App.ViewModels
             string filePath = "test.xlsx";
 
             if (!File.Exists(filePath))
-                throw new FileNotFoundException("Файл не найден", filePath);
-
-            Workbook workbook = new Workbook(filePath);
-            Worksheet sheet = workbook.Worksheets["Избранное"];
-
-            if (sheet == null)
-                throw new ArgumentException("Лист не найден");
-
-            int rowCount = sheet.Cells.MaxDataRow;
-
-            for (int i = 0; i <= rowCount; i++)
+                //throw new FileNotFoundException("Файл не найден в ReadFavorites", filePath);
+                return values;
+            else
             {
-                string cellValue = sheet.Cells[i, 0].StringValue; // Читаем первую колонку
-                if (!string.IsNullOrEmpty(cellValue))
-                    values.Add(cellValue);
-            }
+                Workbook workbook = new Workbook(filePath);
+                Worksheet sheet = workbook.Worksheets["Избранное"];
 
-            return values;
+                if (sheet == null)
+                    throw new ArgumentException("Лист не найден");
+
+                int rowCount = sheet.Cells.MaxDataRow;
+
+                for (int i = 0; i <= rowCount; i++)
+                {
+                    string cellValue = sheet.Cells[i, 0].StringValue; // Читаем первую колонку
+                    if (!string.IsNullOrEmpty(cellValue))
+                        values.Add(cellValue);
+                }
+
+                return values;
+            }
         }
 
         public void AddToFavorite(string _material)
@@ -442,7 +445,12 @@ namespace BK_Details_App.ViewModels
 
             //ReadFavorites();
             Favs = ReadFavorites();
-            MainWindowViewModel.Instance.Us = new FavouriteGroups();
+            
+        }
+
+        public void ToFavouritesView()
+        {
+            MainWindowViewModel.Instance.Us = new FavouritesView();
         }
     }
 }
