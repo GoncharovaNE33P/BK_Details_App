@@ -64,6 +64,11 @@
 		<Setter Property="Margin" Value="10"></Setter>
 	</Style>
 
+	<Style Selector="TextBlock.CountItems">
+		<Setter Property="FontSize" Value="20"></Setter>
+		<Setter Property="Margin" Value="10 0 0 10"></Setter>
+	</Style>
+
 	<Style Selector="TextBox.Search">
 		<Setter Property="BorderBrush" Value="#003399"></Setter>
 		<Setter Property="BorderThickness" Value="3"></Setter>

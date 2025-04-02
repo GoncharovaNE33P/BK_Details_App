@@ -1,19 +1,20 @@
-﻿using Aspose.Cells;
-using BK_Details_App.Models;
-using MsBox.Avalonia;
-using ReactiveUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ExcelDataReader;
+using Aspose.Cells;
 using Avalonia.Controls;
-using System.Data;
+using BK_Details_App.Models;
 using DynamicData;
+using ExcelDataReader;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
+using ReactiveUI;
 
 namespace BK_Details_App.ViewModels
 {
@@ -21,8 +22,8 @@ namespace BK_Details_App.ViewModels
     {
         #region properties
         List<Materials> _materialsList = new();
-        public List<Materials> MaterialsList 
-        { 
+        public List<Materials> MaterialsList
+        {
             get => _materialsList;
             set => this.RaiseAndSetIfChanged(ref _materialsList, value);
         }
@@ -45,15 +46,7 @@ namespace BK_Details_App.ViewModels
         public string SearchMaterials { get { return _searchMaterials; } set { _searchMaterials = value; FilterMaterials(); } }
 
         bool _isAscending = false;
-        public bool IsAscending
-        {
-            get => _isAscending;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _isAscending, value);
-                FilterMaterials();
-            }
-        }
+        public bool IsAscending { get => _isAscending; set { this.RaiseAndSetIfChanged(ref _isAscending, value); FilterMaterials(); } }
 
         List<string> _favs = new();
         public List<string> Favs { get => _favs; set => this.RaiseAndSetIfChanged(ref _favs, value); }
@@ -64,22 +57,37 @@ namespace BK_Details_App.ViewModels
         List<PEZ> _listPEZs = new();
         public List<PEZ> ListPEZs { get => _listPEZs; set => this.RaiseAndSetIfChanged(ref _listPEZs, value); }
 
-        private string filePath;
-        public string FilePath { get => filePath; set => this.RaiseAndSetIfChanged(ref filePath, value); }
+        private string _filePath;
+        public string FilePath { get => _filePath; set => this.RaiseAndSetIfChanged(ref _filePath, value); }
+
+        private string _nameFile;
+        public string NameFile { get => _nameFile; set => this.RaiseAndSetIfChanged(ref _nameFile, value); }
 
         string _searchPEZs;
         public string SearchPEZs { get { return _searchPEZs; } set { _searchPEZs = value; FiltersPEZs(); } }
 
         bool _isAscendingPEZs = false;
-        public bool IsAscendingPEZs
-        {
-            get => _isAscendingPEZs;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _isAscendingPEZs, value);
-                FiltersPEZs();
-            }
-        }
+        public bool IsAscendingPEZs { get => _isAscendingPEZs; set { this.RaiseAndSetIfChanged(ref _isAscendingPEZs, value); FiltersPEZs(); } }
+
+        int _countItemsMaterials = 0;
+
+        public int CountItemsMaterials { get => _countItemsMaterials; set => this.RaiseAndSetIfChanged(ref _countItemsMaterials, value); }
+
+        int _countItemsFileMaterials = 0;
+
+        public int CountItemsFileMaterials { get => _countItemsFileMaterials; set => this.RaiseAndSetIfChanged(ref _countItemsFileMaterials, value); }
+
+        int _countItemsPEZs = 0;
+
+        public int CountItemsPEZs { get => _countItemsPEZs; set => this.RaiseAndSetIfChanged(ref _countItemsPEZs, value); }
+
+        int _countItemsFilePEZ = 0;
+
+        public int CountItemsFilePEZ { get => _countItemsFilePEZ; set => this.RaiseAndSetIfChanged(ref _countItemsFilePEZ, value); }
+
+        int _selectedFilter = 0;
+        public int SelectedFilter { get => _selectedFilter; set { _selectedFilter = value; FiltersPEZs(); } }
+
 
         #endregion
 
@@ -87,6 +95,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
+                NameFile = "Тестовое ПЭ3";
                 ReadFromExcelFile();
                 SelectedGroup = _groupsList[0];
                 SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
@@ -101,6 +110,19 @@ namespace BK_Details_App.ViewModels
                 }
             }
         }
+
+        #region Методы для вывода оконных сообщений
+        private void ShowError(string title, string message)
+        {
+            MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+        }
+
+        private void ShowSuccess(string title, string message)
+        {
+            MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success).ShowAsync();
+        }
+
+        #endregion
 
         #region filters
         void FilterMaterials()
@@ -136,8 +158,10 @@ namespace BK_Details_App.ViewModels
                         FilteredMaterials.OrderByDescending(x => x.Name)
                     );
                 }
+
+                CountItemsMaterials = FilteredMaterials.Count();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
             }
@@ -166,13 +190,62 @@ namespace BK_Details_App.ViewModels
 
         public void FiltersPEZs()
         {
-            if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
-            else LoadExcel(FilePath);
-
-            if (!string.IsNullOrWhiteSpace(_searchPEZs))
+            try
             {
-                ListPEZs = ListPEZs.Where(x => x.Name.ToLower().Contains(_searchPEZs.ToLower())).ToList();
+                if (FilePath == null)
+                {
+                    ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
+                    return;
+                }
+
+                if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
+                else LoadExcel(FilePath);
+
+                if (!string.IsNullOrWhiteSpace(_searchPEZs))
+                {
+                    ListPEZs = ListPEZs.Where(x => x.Name.ToLower().Contains(_searchPEZs.ToLower())).ToList();
+                }
+
+                if (!_isAscendingPEZs)
+                {
+                    ListPEZs = ListPEZs.OrderBy(x => x.Name).ToList();
+                }
+                else
+                {
+                    ListPEZs = ListPEZs.OrderByDescending(x => x.Name).ToList();
+                }
+
+                int count1 = 10;
+                int count2 = 11;
+                int count3 = 20;
+                int count4 = 21;
+
+                switch (_selectedFilter)
+                {
+                    case 0:
+                        ListPEZs = ListPEZs.ToList();
+                        break;
+
+                    case 1:
+                        ListPEZs = ListPEZs.Where(x => x.Quantity <= count1).ToList();
+                        break;
+
+                    case 2:
+                        ListPEZs = ListPEZs.Where(x => x.Quantity >= count2 && x.Quantity < count3).ToList();
+                        break;
+
+                    case 3:
+                        ListPEZs = ListPEZs.Where(x => x.Quantity >= count4).ToList();
+                        break;
+                }
+
+                CollectionPEZs.Clear();
                 CollectionPEZs.AddRange(ListPEZs);
+                CountItemsPEZs = ListPEZs.Count();
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
             }
         }
         #endregion
@@ -191,11 +264,11 @@ namespace BK_Details_App.ViewModels
             {
                 // Получить рабочий лист, используя его индекс
                 Worksheet worksheet = collection[worksheetIndex];
-                
-                Groups groups = new Groups() 
-                { 
-                    GroupIdNumber = random.Next(1, 1000), 
-                    Name = worksheet.Name 
+
+                Groups groups = new Groups()
+                {
+                    GroupIdNumber = random.Next(1, 1000),
+                    Name = worksheet.Name
                 };
                 _groupsList.Add(groups);
 
@@ -215,7 +288,7 @@ namespace BK_Details_App.ViewModels
 
                         if (cell.StringValue == "") break;
 
-                        if (style.Font.IsBold is true) 
+                        if (style.Font.IsBold is true)
                         {
                             // Если предыдущая ячейка в той же колонке тоже была с жирным шрифтом, удаляем её
                             if (lastColoredRow == cell.Row - 1)
@@ -223,7 +296,7 @@ namespace BK_Details_App.ViewModels
                                 _categoriesList.RemoveAt(_categoriesList.Count - 1);
                             }
 
-                            Category category = new Category() 
+                            Category category = new Category()
                             {
                                 CategoryId = random.Next(1, 1000),
                                 Name = cell.StringValue,
@@ -258,89 +331,121 @@ namespace BK_Details_App.ViewModels
                 // переходим на следующий лист
             }
 
+            CountItemsMaterials = MaterialsList.Count();
+            CountItemsFileMaterials = MaterialsList.Count();
+
         }
 
         public async Task OpenFileAsync()
         {
-            OpenFileDialog? dialog = new OpenFileDialog
+            try
             {
-                Title = "Выберите файл Excel",
-                Filters = {
-            new FileDialogFilter { Name = "Excel Files", Extensions = { "xls", "xlsx" } },
-            new FileDialogFilter { Name = "CSV Files", Extensions = { "csv" } }
-        }
-            };
+                OpenFileDialog? dialog = new OpenFileDialog
+                {
+                    Title = "Выберите файл Excel",
+                    Filters = {
+                        new FileDialogFilter { Name = "CSV Files", Extensions = { "csv" } },
+                        new FileDialogFilter { Name = "Excel Files", Extensions = { "xls", "xlsx" } }
+                    }
+                };
 
-            string[]? files = await dialog.ShowAsync(new Window());
-            if (files == null || files.Length == 0) return;
+                string[]? files = await dialog.ShowAsync(new Window());
+                if (files == null || files.Length == 0) return;
 
-            FilePath = files[0];
-            if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
-            else LoadExcel(FilePath);
+                FilePath = files[0];
+                NameFile = FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
+                if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
+                else LoadExcel(FilePath);
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
         }
 
         private void LoadExcel(string filePath)
         {
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            using FileStream? stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
-            using IExcelDataReader? reader = ExcelReaderFactory.CreateReader(stream);
-
-            var result = reader.AsDataSet();
-            var table = result.Tables[0];
-
-            CollectionPEZs.Clear();
-            foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
+            try
             {
-                if (row[2].ToString() == "метка" || row[2].ToString() == "заземление") continue;
-                else
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                using FileStream? stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+                using IExcelDataReader? reader = ExcelReaderFactory.CreateReader(stream);
+
+                var result = reader.AsDataSet();
+                var table = result.Tables[0];
+
+                CollectionPEZs.Clear();
+                foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
                 {
-                    CollectionPEZs.Add(
-                        new PEZ
-                        {
-                            IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
-                            Mark = row[1]?.ToString(),
-                            Name = row[2]?.ToString(),
-                            Quantity = int.TryParse(row[3]?.ToString(), out int quantity) ? quantity : 0
-                        }
-                    );
+                    if (row[2].ToString() == "метка" || row[2].ToString() == "заземление") continue;
+                    else
+                    {
+                        CollectionPEZs.Add(
+                            new PEZ
+                            {
+                                IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
+                                Mark = row[1]?.ToString(),
+                                Name = row[2]?.ToString(),
+                                Quantity = int.TryParse(row[3]?.ToString(), out int quantity) ? quantity : 0
+                            }
+                        );
+                    }
                 }
+                ListPEZs.Clear();
+                ListPEZs = CollectionPEZs.ToList();
+
+                CountItemsFilePEZ = ListPEZs.Count();
+                CountItemsPEZs = ListPEZs.Count();
             }
-            ListPEZs.Clear();
-            ListPEZs = CollectionPEZs.ToList();
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
         }
 
         private void LoadCsv(string filePath)
         {
-            Encoding? encoding = Encoding.UTF8;
-
-            byte[]? bytes = File.ReadAllBytes(filePath);
-            if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) encoding = Encoding.UTF8;
-            else encoding = Encoding.GetEncoding("Windows-1251");
-
-            string[]? lines = File.ReadAllLines(filePath, encoding);
-            CollectionPEZs.Clear();
-
-            foreach (string? line in lines.Skip(1))
+            try
             {
-                string[]? parts = line.Split(';');
-                if (parts.Length < 4) continue;
+                Encoding? encoding = Encoding.UTF8;
 
-                if (parts[2] == "метка" || parts[2] == "заземление") continue;
-                else
+                byte[]? bytes = File.ReadAllBytes(filePath);
+                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) encoding = Encoding.UTF8;
+                else encoding = Encoding.GetEncoding("Windows-1251");
+
+                string[]? lines = File.ReadAllLines(filePath, encoding);
+                CollectionPEZs.Clear();
+
+                foreach (string? line in lines.Skip(1))
                 {
-                    CollectionPEZs.Add(
-                        new PEZ
-                        {
-                            IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
-                            Mark = parts[1]?.ToString(),
-                            Name = parts[2]?.ToString(),
-                            Quantity = int.TryParse(parts[3]?.ToString(), out int quantity) ? quantity : 0
-                        }
-                    );
+                    string[]? parts = line.Split(';');
+                    if (parts.Length < 4) continue;
+
+                    if (parts[2] == "метка" || parts[2] == "заземление") continue;
+                    else
+                    {
+                        CollectionPEZs.Add(
+                            new PEZ
+                            {
+                                IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
+                                Mark = parts[1]?.ToString(),
+                                Name = parts[2]?.ToString(),
+                                Quantity = int.TryParse(parts[3]?.ToString(), out int quantity) ? quantity : 0
+                            }
+                        );
+                    }
                 }
+
+                ListPEZs.Clear();
+                ListPEZs = CollectionPEZs.ToList();
+
+                CountItemsFilePEZ = ListPEZs.Count();
+                CountItemsPEZs = ListPEZs.Count();
             }
-            ListPEZs.Clear();
-            ListPEZs = CollectionPEZs.ToList();
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
         }
 
 
@@ -445,7 +550,7 @@ namespace BK_Details_App.ViewModels
 
             //ReadFavorites();
             Favs = ReadFavorites();
-            
+
         }
 
         public void ToFavouritesView()
