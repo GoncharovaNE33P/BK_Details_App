@@ -6,5 +6,93 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="BK_Details_App.FavouritesView"
 			 x:DataType="vm:FavouritesVM">
-  
+	<Grid RowDefinitions="8*, Auto, 78*">
+		<!--Верхняя панель с лого и кнопками-->
+		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto">
+			<Image Grid.Column="0" Height="45" Width="80" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
+			<!--<Border Grid.Column="1" BorderThickness="3" BorderBrush="LawnGreen"></Border>-->
+			<TextBlock Grid.Column="1" Classes="HeadPage" >Избранное</TextBlock>
+			<StackPanel Orientation="Horizontal" Grid.Column="2">
+				<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right" Command="{Binding ToDetailsView}">Назад</Button>
+			</StackPanel>
+		</Grid>
+
+		<!--Поиск, сортировка и фильтрация-->
+		<Grid Grid.Row="1" ColumnDefinitions="3*, Auto" RowDefinitions="*,*,*">
+			<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
+					 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+					 TextWrapping="Wrap" Text="{Binding SearchFavs}"></TextBox>
+			<!--:::::::::::::::::::::::::::::::::::::::::::::::::при загрузке страницы в комбобоксе по умолчанию стоит первое значение, но лист на деле не отсортированный-->
+			<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка" SelectedIndex="{Binding IsAscFavs}">
+				<ComboBox.Items>От А до Я</ComboBox.Items>
+				<ComboBox.Items>От Я до А</ComboBox.Items>
+			</ComboBox>
+			<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация" ItemsSource="{Binding GroupsList}" SelectedItem="{Binding SelectedGrFavs}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Name}"></TextBlock>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+			<StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal">
+				<TextBlock  Classes="CountItems" Text="Избранные материалы:"></TextBlock>
+				<TextBlock Grid.Row="2" Grid.Column="0" Classes="CountItems">
+					<TextBlock.Text>
+						<MultiBinding StringFormat="{}{0} из {1}">
+							<Binding Path="CountItemsFavs"/>
+							<Binding Path="CountItemsFileFavs"/>
+						</MultiBinding>
+					</TextBlock.Text>
+				</TextBlock>
+			</StackPanel>
+		</Grid>
+
+		<TextBlock Grid.Row="2" Classes="CountItems" Text="Ничего не найдено" IsVisible="{Binding NothingFound}"></TextBlock>
+		<Border Grid.Row="2" Classes="ListRight">
+			<ListBox Background="Transparent" ItemsSource="{Binding FilteredFavs}">
+				<ListBox.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel></WrapPanel>
+					</ItemsPanelTemplate>
+				</ListBox.ItemsPanel>
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<StackPanel Background="Transparent">
+							<StackPanel.ContextMenu>
+								<ContextMenu>
+									<MenuItem Header="Удалить из избранного" Command="{Binding $parent[UserControl].((vm:FavouritesVM)DataContext).RemoveFromFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+									<MenuItem Header="Редактировать" Command="{Binding $parent[UserControl].((vm:FavouritesVM)DataContext).DetailsVMObj.AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+									<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:FavouritesVM)DataContext).DetailsVMObj.AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+								</ContextMenu>
+							</StackPanel.ContextMenu>
+							<Border Classes="ItemsLeft">
+								<Grid ColumnDefinitions="90*, 10*" Height="160" Width="300" Margin="10">
+									<!--информация-->
+									<Grid Grid.Column="0" RowDefinitions="30*, 25*, 25*, 25*, 25*">
+										<TextBlock Grid.Row="0" FontWeight="Bold" Margin="0 0 5 0" Text="{Binding Name, StringFormat='Наименование: {0}'}" TextWrapping="Wrap"></TextBlock>
+										<TextBlock Grid.Row="1" Margin="0 0 5 0" Text="Аналоги:"></TextBlock>
+										<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
+											Grid.Row="2" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+											<TextBlock Margin="0 5 0 5" Text="{Binding Analogs}"></TextBlock>
+										</ScrollViewer>
+										<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
+											Grid.Row="3" Margin="0 15 0 0" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+											<TextBlock Margin="0 10 0 10" Text="{Binding CategoryNavigation.Name}"></TextBlock>
+										</ScrollViewer>
+										<TextBlock Grid.Row="4" Margin="0 10 0 0" Text="{Binding Note, StringFormat='Примечание: {0}'}" TextWrapping="Wrap"></TextBlock>
+									</Grid>
+
+									<!--единицы измерения-->
+									<Grid Grid.Column="1" RowDefinitions="50*, 50*">
+										<TextBlock TextWrapping="Wrap" Grid.Row="0" Text="{Binding Measurement}"
+												   HorizontalAlignment="Center" TextAlignment="Center" Margin="5 0 0 0"></TextBlock>
+									</Grid>
+								</Grid>
+							</Border>
+						</StackPanel>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+		</Border>
+	</Grid>
 </UserControl>

@@ -99,7 +99,7 @@ namespace BK_Details_App.ViewModels
                 ReadFromExcelFile();
                 SelectedGroup = _groupsList[0];
                 SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
-                //ReadFavorites();
+                FilterMaterials();
                 Favs = ReadFavorites();
             }
             catch (Exception ex)
@@ -112,12 +112,12 @@ namespace BK_Details_App.ViewModels
         }
 
         #region Методы для вывода оконных сообщений
-        private void ShowError(string title, string message)
+        public void ShowError(string title, string message)
         {
             MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
         }
 
-        private void ShowSuccess(string title, string message)
+        public void ShowSuccess(string title, string message)
         {
             MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success).ShowAsync();
         }
@@ -499,7 +499,7 @@ namespace BK_Details_App.ViewModels
             }
         }
 
-        public void AddToFavorite(string _material)
+        public async Task AddToFavorite(string _material)
         {
             string filePath = "test.xlsx";
 
@@ -550,7 +550,7 @@ namespace BK_Details_App.ViewModels
 
             //ReadFavorites();
             Favs = ReadFavorites();
-
+            ShowSuccess("Успех", $"{_material} добавлен в избранное");
         }
 
         public void ToFavouritesView()
