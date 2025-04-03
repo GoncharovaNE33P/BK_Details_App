@@ -6,19 +6,15 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="BK_Details_App.DetailsView"
 			 x:DataType="vm:DetailsVM">
+	
 	<Grid RowDefinitions="8*, Auto, 78*">
-		<!--<Border Grid.Row="0" BorderThickness="3" BorderBrush="LightSteelBlue"></Border>
-		<Border Grid.Row="1" BorderThickness="3" BorderBrush="LawnGreen"></Border>
-		<Border Grid.Row="2" BorderThickness="3" BorderBrush="Red"></Border>-->
-
 		<!--Верхняя панель с лого и кнопками-->
 		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto">
-			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png"></Image>
-			<!--<Border Grid.Column="1" BorderThickness="3" BorderBrush="LawnGreen"></Border>-->
+			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png" Height="45" Width="80"></Image>
 			<TextBlock Grid.Column="1" Classes="HeadPage" >Просмотр материалов</TextBlock>
 			<StackPanel Orientation="Horizontal" Grid.Column="2">
-				<Button Classes="ChooseUploadFile" Width="230" Command="{Binding OpenFileAsync}" Margin="0 10 20 10" HorizontalAlignment="Right">Выбрать файл для сравнения</Button>
-				<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right">Выгрузить результат в Excel</Button>
+				<Button Classes="ChooseUploadFile" Width="230" Command="{Binding OpenFileAsync}" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Выбрать файл для сравнения"></Button>
+				<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Выгрузить результат в Excel"></Button>
 			</StackPanel>
 		</Grid>
 
@@ -125,10 +121,12 @@
 										<!--кнопки редактирования и удаления-->
 										<Grid Grid.Column="1" RowDefinitions="50*, 50*">
 											<StackPanel Grid.Row="0">
-												<Button Background="Transparent" Grid.Column="1">
+												<Button Background="Transparent" Grid.Column="1" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).ShowEditPEZ}" 
+														CommandParameter="{Binding IdNumber}">
 													<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/edit.png" Width="44"></Image>
 												</Button>
-												<Button Background="Transparent" Grid.Column="1">
+												<Button Background="Transparent" Grid.Column="1" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).DeletePEZ}"
+														CommandParameter="{Binding IdNumber}">
 													<Image VerticalAlignment="Center" Margin="5" Source="avares://BK_Details_App/Assets/del.png" Width="44"></Image>
 												</Button>
 											</StackPanel>
@@ -138,7 +136,7 @@
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 					</ListBox>
-					<Button Classes="ChooseUploadFile" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
+					<Button Classes="ChooseUploadFile" Command="{Binding ShowAddPEZ}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
 				</Grid>
 			</Border>
 

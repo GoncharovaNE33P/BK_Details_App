@@ -9,18 +9,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Aspose.Cells;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using BK_Details_App.Models;
 using DynamicData;
 using ExcelDataReader;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
+using Tmds.DBus.Protocol;
 
 namespace BK_Details_App.ViewModels
 {
     internal class DetailsVM : ViewModelBase
     {
         #region properties
+
         List<Materials> _materialsList = new();
         public List<Materials> MaterialsList
         {
@@ -70,24 +73,21 @@ namespace BK_Details_App.ViewModels
         public bool IsAscendingPEZs { get => _isAscendingPEZs; set { this.RaiseAndSetIfChanged(ref _isAscendingPEZs, value); FiltersPEZs(); } }
 
         int _countItemsMaterials = 0;
-
         public int CountItemsMaterials { get => _countItemsMaterials; set => this.RaiseAndSetIfChanged(ref _countItemsMaterials, value); }
 
         int _countItemsFileMaterials = 0;
-
         public int CountItemsFileMaterials { get => _countItemsFileMaterials; set => this.RaiseAndSetIfChanged(ref _countItemsFileMaterials, value); }
 
         int _countItemsPEZs = 0;
-
         public int CountItemsPEZs { get => _countItemsPEZs; set => this.RaiseAndSetIfChanged(ref _countItemsPEZs, value); }
 
         int _countItemsFilePEZ = 0;
-
         public int CountItemsFilePEZ { get => _countItemsFilePEZ; set => this.RaiseAndSetIfChanged(ref _countItemsFilePEZ, value); }
 
         int _selectedFilter = 0;
         public int SelectedFilter { get => _selectedFilter; set { _selectedFilter = value; FiltersPEZs(); } }
 
+        private Window? _addPEZWindow;
 
         #endregion
 
@@ -249,6 +249,8 @@ namespace BK_Details_App.ViewModels
             }
         }
         #endregion
+
+        #region Методы считывания данных из Excel
 
         void ReadFromExcelFile()
         {
@@ -470,6 +472,10 @@ namespace BK_Details_App.ViewModels
             }
         }*/
 
+        #endregion
+
+        #region Методы связанные с избранными материалами
+
         public List<string> ReadFavorites()
         {
             List<string> values = new List<string>();
@@ -557,5 +563,144 @@ namespace BK_Details_App.ViewModels
         {
             MainWindowViewModel.Instance.Us = new FavouritesView();
         }
+
+        #endregion
+
+        #region Методы открытия окна добавления/редактирования ПЭЗ и метод удаления ПЭЗ
+
+        public void ShowAddPEZ()
+        {
+            try
+            {
+                if (FilePath == null)
+                {
+                    ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
+                    return;
+                }
+
+                if (_addPEZWindow != null) return;
+
+                var viewModel = new AddEditPEZVM(FilePath);
+
+                _addPEZWindow = new Window
+                {
+                    MinHeight = 600,
+                    MinWidth = 1500,
+                    Content = new AddEditPEZView { DataContext = viewModel },
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    CanResize = false,
+                    Title = "BK_Details_App",
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png")))
+                };
+
+                viewModel.CloseAction = () =>
+                {
+                    if (viewModel.CloseAction != null)
+                    {
+                        _addPEZWindow.Closing -= PreventClosing;
+                        _addPEZWindow.Close();
+                        _addPEZWindow = null;
+                    }
+                };
+
+                _addPEZWindow.Closing += PreventClosing;
+
+                _addPEZWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
+        }
+
+        public void ShowEditPEZ(int id)
+        {
+            try
+            {
+                if (FilePath == null)
+                {
+                    ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
+                    return;
+                }
+
+                if (_addPEZWindow != null) return;
+
+                var viewModel = new AddEditPEZVM(id, FilePath);
+
+                _addPEZWindow = new Window
+                {
+                    MinHeight = 600,
+                    MinWidth = 1500,
+                    Content = new AddEditPEZView { DataContext = viewModel },
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    CanResize = false,
+                    Title = "BK_Details_App",
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png")))
+                };
+
+                viewModel.CloseAction = () =>
+                {
+                    if (viewModel.CloseAction != null)
+                    {
+                        _addPEZWindow.Closing -= PreventClosing;
+                        _addPEZWindow.Close();
+                        _addPEZWindow = null;
+                    }
+                };
+
+                _addPEZWindow.Closing += PreventClosing;
+
+                _addPEZWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
+        }
+
+        private void PreventClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+        }
+
+        public async void DeletePEZ(int id)
+        {
+            try
+            {
+                string Messege = "Вы уверенны, что хотите удалить данное ПЭЗ?";
+                ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Сообщение с уведомлением об удалении!", Messege, ButtonEnum.YesNo).ShowAsync();
+                PEZ? PEZRemove = CollectionPEZs.FirstOrDefault(p => p.IdNumber == id);
+
+                if (PEZRemove != null)
+                {
+                    CollectionPEZs.Remove(PEZRemove);
+                    ListPEZs = CollectionPEZs.ToList();
+                    CountItemsFilePEZ = ListPEZs.Count();
+                    CountItemsPEZs = ListPEZs.Count();
+                }
+
+                switch (result)
+                {
+                    case ButtonResult.Yes:
+                        {
+                            Messege = "ПЭЗ удалён!";
+                            ShowSuccess("Сообщение с уведомлением об удалении!", Messege);
+                            break;
+                        }
+                    case ButtonResult.No:
+                        {
+                            Messege = "Удаление отменено!";
+                            ShowSuccess("Сообщение с уведомлением об удалении!", Messege);
+                            break;
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
+        }
+
+        #endregion
     }
 }
