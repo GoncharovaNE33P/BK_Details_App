@@ -17,6 +17,10 @@ using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
 using Tmds.DBus.Protocol;
+using FuzzySharp;
+using FuzzySharp.PreProcess;
+using FuzzySharp.SimilarityRatio.Scorer.Composite;
+using FuzzySharp.SimilarityRatio;
 
 namespace BK_Details_App.ViewModels
 {
@@ -398,6 +402,8 @@ namespace BK_Details_App.ViewModels
 
                 CountItemsFilePEZ = ListPEZs.Count();
                 CountItemsPEZs = ListPEZs.Count();
+
+                MatchPEZMaterials();
             }
             catch (Exception ex)
             {
@@ -443,6 +449,8 @@ namespace BK_Details_App.ViewModels
 
                 CountItemsFilePEZ = ListPEZs.Count();
                 CountItemsPEZs = ListPEZs.Count();
+
+                MatchPEZMaterials();
             }
             catch (Exception ex)
             {
@@ -450,6 +458,15 @@ namespace BK_Details_App.ViewModels
             }
         }
 
+        public void ExportToExcel()
+        {
+            string _filePath = "REPORT.xlsx";
+
+            Workbook _workbook = new Workbook(_filePath);
+            Worksheet _sheet = _workbook.Worksheets[0];
+
+
+        }
 
         /*public void ReadFavorites()
         {
@@ -568,7 +585,7 @@ namespace BK_Details_App.ViewModels
 
         #region Методы открытия окна добавления/редактирования ПЭЗ и метод удаления ПЭЗ
 
-        public void ShowAddPEZ()
+        public void ShowAddPEZ(int id)
         {
             try
             {
@@ -580,7 +597,7 @@ namespace BK_Details_App.ViewModels
 
                 if (_addPEZWindow != null) return;
 
-                var viewModel = new AddEditPEZVM(FilePath);
+                var viewModel = new AddEditPEZVM(id, FilePath);
 
                 _addPEZWindow = new Window
                 {
@@ -669,20 +686,19 @@ namespace BK_Details_App.ViewModels
             {
                 string Messege = "Вы уверенны, что хотите удалить данное ПЭЗ?";
                 ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Сообщение с уведомлением об удалении!", Messege, ButtonEnum.YesNo).ShowAsync();
-                PEZ? PEZRemove = CollectionPEZs.FirstOrDefault(p => p.IdNumber == id);
-
-                if (PEZRemove != null)
-                {
-                    CollectionPEZs.Remove(PEZRemove);
-                    ListPEZs = CollectionPEZs.ToList();
-                    CountItemsFilePEZ = ListPEZs.Count();
-                    CountItemsPEZs = ListPEZs.Count();
-                }
+                PEZ? PEZRemove = CollectionPEZs.FirstOrDefault(p => p.IdNumber == id);                
 
                 switch (result)
                 {
                     case ButtonResult.Yes:
                         {
+                            if (PEZRemove != null)
+                            {
+                                CollectionPEZs.Remove(PEZRemove);
+                                ListPEZs = CollectionPEZs.ToList();
+                                CountItemsFilePEZ = ListPEZs.Count();
+                                CountItemsPEZs = ListPEZs.Count();
+                            }
                             Messege = "ПЭЗ удалён!";
                             ShowSuccess("Сообщение с уведомлением об удалении!", Messege);
                             break;
@@ -702,5 +718,25 @@ namespace BK_Details_App.ViewModels
         }
 
         #endregion
+
+        public void MatchPEZMaterials()
+        {
+            string[]? materialNames = MaterialsList.Select(x => x.Name).ToArray(); // Кэшируем список имен
+            FuzzySharp.SimilarityRatio.Scorer.IRatioScorer? scorer = ScorerCache.Get<WeightedRatioScorer>();
+            
+            Parallel.ForEach(CollectionPEZs, _element =>
+            {
+                FuzzySharp.Extractor.ExtractedResult<string>? match = FuzzySharp.Process.ExtractOne(_element.Name, materialNames, s => s, scorer);
+
+                _element.Matched = materialNames[match.Index];
+
+                _element.Color = match.Score switch
+                {
+                    100 => "#66C190",
+                    > 70 => "#FFE666",
+                    _ => "#FF9166"
+                };
+            });
+        }
     }
 }

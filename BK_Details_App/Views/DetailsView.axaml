@@ -93,7 +93,7 @@
 						</ListBox.ItemsPanel>
 						<ListBox.ItemTemplate>
 							<DataTemplate>
-								<Border Classes="ItemsLeft" Height="190">
+								<Border Classes="ItemsLeft" Height="190" Background="{Binding Color}">
 									<Grid ColumnDefinitions="80*, 20*" Height="190">
 										<!--информация-->
 										<Grid Grid.Column="0" RowDefinitions="Auto, *, Auto, *, Auto" Margin="10">
@@ -136,7 +136,8 @@
 							</DataTemplate>
 						</ListBox.ItemTemplate>
 					</ListBox>
-					<Button Classes="ChooseUploadFile" Command="{Binding ShowAddPEZ}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
+					<Button Classes="ChooseUploadFile" Command="{Binding ShowAddPEZ}"
+							HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">Добавить ПЭЗ</Button>
 				</Grid>
 			</Border>
 
@@ -172,7 +173,7 @@
 											<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
 										</ContextMenu>
 									</StackPanel.ContextMenu>
-									<Border Classes="ItemsLeft">
+									<Border Classes="ItemsLeft" Background="White">
 										<Grid ColumnDefinitions="90*, 10*" Height="160" Margin="10">
 											<!--информация-->
 											<Grid Grid.Column="0" RowDefinitions="30*, 25*, 25*, 25*, 25*">

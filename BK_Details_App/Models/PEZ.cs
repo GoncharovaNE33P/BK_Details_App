@@ -12,5 +12,7 @@ namespace BK_Details_App.Models
         public string Mark { get; set; }
         public string Name { get; set; }
         public int Quantity { get; set; }
+        public string Color { get; set; }
+        public string Matched { get; set; }
     }
 }

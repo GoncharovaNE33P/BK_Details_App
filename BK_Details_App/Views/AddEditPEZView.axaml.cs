@@ -13,12 +13,6 @@ public partial class AddEditPEZView : UserControl
         DataContext = new AddEditPEZVM();
     }
 
-    public AddEditPEZView(string filePath)
-    {
-        InitializeComponent();
-        DataContext = new AddEditPEZVM(filePath);
-    }
-
     public AddEditPEZView(int id, string filePath)
     {
         InitializeComponent();
