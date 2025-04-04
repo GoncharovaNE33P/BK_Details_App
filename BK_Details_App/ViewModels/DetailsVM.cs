@@ -21,6 +21,8 @@ using FuzzySharp;
 using FuzzySharp.PreProcess;
 using FuzzySharp.SimilarityRatio.Scorer.Composite;
 using FuzzySharp.SimilarityRatio;
+using ClosedXML.Excel;
+using Avalonia.Media;
 
 namespace BK_Details_App.ViewModels
 {
@@ -105,6 +107,12 @@ namespace BK_Details_App.ViewModels
                 SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
                 FilterMaterials();
                 Favs = ReadFavorites();
+                if (MainWindowViewModel.BaseListPEZs.Count > 0) CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
+                if (MainWindowViewModel.FilePath != null)
+                {
+                    FilePath = MainWindowViewModel.FilePath;
+                    NameFile = FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
+                }
             }
             catch (Exception ex)
             {
@@ -118,12 +126,28 @@ namespace BK_Details_App.ViewModels
         #region Методы для вывода оконных сообщений
         public void ShowError(string title, string message)
         {
-            MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+            MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+            {
+                ContentTitle = title,
+                ContentMessage = message,
+                Icon = MsBox.Avalonia.Enums.Icon.Error,
+                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+
+            }).ShowAsync();
         }
 
         public void ShowSuccess(string title, string message)
         {
-            MessageBoxManager.GetMessageBoxStandard(title, message, ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Success).ShowAsync();
+            MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+            {
+                ContentTitle = title,
+                ContentMessage = message,
+                Icon = MsBox.Avalonia.Enums.Icon.Success,
+                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+
+            }).ShowAsync();
         }
 
         #endregion
@@ -202,8 +226,7 @@ namespace BK_Details_App.ViewModels
                     return;
                 }
 
-                if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
-                else LoadExcel(FilePath);
+                ListPEZs = MainWindowViewModel.BaseListPEZs;
 
                 if (!string.IsNullOrWhiteSpace(_searchPEZs))
                 {
@@ -358,7 +381,8 @@ namespace BK_Details_App.ViewModels
                 string[]? files = await dialog.ShowAsync(new Window());
                 if (files == null || files.Length == 0) return;
 
-                FilePath = files[0];
+                MainWindowViewModel.FilePath = files[0];                
+                FilePath = MainWindowViewModel.FilePath;
                 NameFile = FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
                 if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
                 else LoadExcel(FilePath);
@@ -380,13 +404,13 @@ namespace BK_Details_App.ViewModels
                 var result = reader.AsDataSet();
                 var table = result.Tables[0];
 
-                CollectionPEZs.Clear();
+                
                 foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
                 {
                     if (row[2].ToString() == "метка" || row[2].ToString() == "заземление") continue;
                     else
                     {
-                        CollectionPEZs.Add(
+                        MainWindowViewModel.BaseListPEZs.Add(
                             new PEZ
                             {
                                 IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
@@ -397,8 +421,11 @@ namespace BK_Details_App.ViewModels
                         );
                     }
                 }
+
+                CollectionPEZs.Clear();
                 ListPEZs.Clear();
-                ListPEZs = CollectionPEZs.ToList();
+                ListPEZs = MainWindowViewModel.BaseListPEZs;
+                CollectionPEZs.AddRange(ListPEZs);
 
                 CountItemsFilePEZ = ListPEZs.Count();
                 CountItemsPEZs = ListPEZs.Count();
@@ -432,7 +459,7 @@ namespace BK_Details_App.ViewModels
                     if (parts[2] == "метка" || parts[2] == "заземление") continue;
                     else
                     {
-                        CollectionPEZs.Add(
+                        MainWindowViewModel.BaseListPEZs.Add(
                             new PEZ
                             {
                                 IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
@@ -444,8 +471,10 @@ namespace BK_Details_App.ViewModels
                     }
                 }
 
+                CollectionPEZs.Clear();
                 ListPEZs.Clear();
-                ListPEZs = CollectionPEZs.ToList();
+                ListPEZs = MainWindowViewModel.BaseListPEZs;
+                CollectionPEZs.AddRange(ListPEZs);
 
                 CountItemsFilePEZ = ListPEZs.Count();
                 CountItemsPEZs = ListPEZs.Count();
@@ -460,34 +489,58 @@ namespace BK_Details_App.ViewModels
 
         public void ExportToExcel()
         {
-            string _filePath = "REPORT.xlsx";
+            if (FilePath == null)
+            {
+                ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
+                return;
+            }
 
-            Workbook _workbook = new Workbook(_filePath);
-            Worksheet _sheet = _workbook.Worksheets[0];
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string folderPath = Path.Combine(desktopPath, "REPORT_Comparison");
+            Directory.CreateDirectory(folderPath);
 
+            string filePath = Path.Combine(folderPath, "REPORT.xlsx");
 
+            XLWorkbook workbook;
+            workbook = new XLWorkbook();
+
+            string sheetName = "REPORT";
+            var sheet = workbook.Worksheets.Contains(sheetName)
+            ? workbook.Worksheet(sheetName)
+            : workbook.AddWorksheet(sheetName);
+
+            //Определяем первую пустую строку
+            sheet.Cell(1, 1).Value = NameFile;
+            sheet.Cell(1, 1).Style.Font.Bold = true;
+            sheet.Cell(1, 1).Style.Font.FontSize = 14;
+            sheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            sheet.Cell(1, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            sheet.Cell(1, 1).Style.Border.OutsideBorderColor = XLColor.Black;
+            sheet.Cell(1, 2).Value = "Материалы";
+            sheet.Cell(1, 2).Style.Font.Bold = true;
+            sheet.Cell(1, 2).Style.Font.FontSize = 14;
+            sheet.Cell(1, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            sheet.Cell(1, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            sheet.Cell(1, 2).Style.Border.OutsideBorderColor = XLColor.Black;
+            int lastRow = sheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
+            
+            foreach (PEZ pez in MainWindowViewModel.BaseListPEZs)
+            {
+                sheet.Cell(lastRow, 1).Value = pez.Name;
+                sheet.Cell(lastRow, 2).Value = pez.Matched;
+                sheet.Cell(lastRow, 1).Style.Fill.BackgroundColor = XLColor.FromHtml(pez.Color);
+                sheet.Cell(lastRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                sheet.Cell(lastRow, 1).Style.Border.OutsideBorderColor = XLColor.Black;
+                sheet.Cell(lastRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                sheet.Cell(lastRow, 2).Style.Border.OutsideBorderColor = XLColor.Black;
+                lastRow++;
+            }            
+
+            //Сохраняем файл
+            workbook.SaveAs(filePath);
+
+            ShowSuccess("Успех!", "Отчёт выгружен в файл Excel!");
         }
-
-        /*public void ReadFavorites()
-        {
-            string filePath = "fav.bin";
-
-            if (File.Exists(filePath))
-            {
-                using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
-                {
-                    while (reader.BaseStream.Position < reader.BaseStream.Length)
-                    {
-                        string str = reader.ReadString();
-                        if (!Favs.Contains(str)) Favs.Add(str);
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Файл не найден.");
-            }
-        }*/
 
         #endregion
 
@@ -585,11 +638,12 @@ namespace BK_Details_App.ViewModels
 
         #region Методы открытия окна добавления/редактирования ПЭЗ и метод удаления ПЭЗ
 
-        public void ShowAddPEZ(int id)
+        public void ShowAddPEZ()
         {
             try
             {
-                if (FilePath == null)
+                int id = 0;
+                if (CollectionPEZs.Count == 0)
                 {
                     ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
                     return;
@@ -634,7 +688,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                if (FilePath == null)
+                if (CollectionPEZs.Count == 0)
                 {
                     ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
                     return;

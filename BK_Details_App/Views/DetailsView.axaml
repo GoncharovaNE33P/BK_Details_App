@@ -14,7 +14,7 @@
 			<TextBlock Grid.Column="1" Classes="HeadPage" >Просмотр материалов</TextBlock>
 			<StackPanel Orientation="Horizontal" Grid.Column="2">
 				<Button Classes="ChooseUploadFile" Width="230" Command="{Binding OpenFileAsync}" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Выбрать файл для сравнения"></Button>
-				<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Выгрузить результат в Excel"></Button>
+				<Button Classes="ChooseUploadFile" Width="220" Command="{Binding ExportToExcel}" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Выгрузить результат в Excel"></Button>
 			</StackPanel>
 		</Grid>
 

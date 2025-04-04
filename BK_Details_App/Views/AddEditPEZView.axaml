@@ -22,11 +22,11 @@
 		<Grid Grid.Row="2">
 			<StackPanel HorizontalAlignment="Center">
 				<TextBlock Classes="HeadTextBox" Text="Введите наименование:"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding }"></TextBox>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewPEZ.Name}" TextWrapping="Wrap" Height="60"></TextBox>
 				<TextBlock Classes="HeadTextBox" Text="Введите метку/и (через запятую):"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding }"></TextBox>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewPEZ.Mark}" TextWrapping="Wrap" Height="60"></TextBox>
 				<TextBlock Classes="HeadTextBox" Text="Введите количество:"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding }"></TextBox>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding QuantityPEZ}"></TextBox>
 			</StackPanel>			
 		</Grid>
 	</Grid>

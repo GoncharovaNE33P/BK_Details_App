@@ -18,17 +18,22 @@ namespace BK_Details_App.ViewModels
         #region properties
 
         private string _headPage = "";
-
         public string HeadPage { get => _headPage; set => this.RaiseAndSetIfChanged(ref _headPage, value); }
 
-        private string _buttonName = "";
 
+        private string _buttonName = "";
         public string ButtonName { get => _buttonName; set => this.RaiseAndSetIfChanged(ref _buttonName, value); }
+
+
+        private string _quantityPEZ = "";
+        public string QuantityPEZ { get => _quantityPEZ; set => this.RaiseAndSetIfChanged(ref _quantityPEZ, value); }
+
 
         private PEZ _newPEZ;
         internal PEZ NewPEZ { get => _newPEZ; set => this.RaiseAndSetIfChanged(ref _newPEZ, value); }
 
         public ReactiveCommand<Unit,Unit> ToBackCommand { get; }
+        public ReactiveCommand<Unit,Unit> Command { get; }
         public Action? CloseAction { get; set; }
 
         DetailsVM DetailsVMObject => new DetailsVM();
@@ -43,12 +48,21 @@ namespace BK_Details_App.ViewModels
             _newPEZ = new PEZ();
 
             ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
+            
         }
 
         public AddEditPEZVM(int id, string filePath)
         {
-            _headPage = "Редактирование ПЭЗ";
-            _buttonName = "Сохранить изменения ПЭЗ";
+            if (id == 0)
+            {
+                _headPage = "Добавление ПЭЗ";
+                _buttonName = "Добавить ПЭЗ";
+            }
+            else
+            {
+                _headPage = "Редактирование ПЭЗ";
+                _buttonName = "Сохранить изменения ПЭЗ";                
+            }
             
             LoadData(id, filePath);
 
@@ -57,88 +71,50 @@ namespace BK_Details_App.ViewModels
 
         private void LoadData(int id, string filePath)
         {
-            List<PEZ> ListPEZ = new List<PEZ>();
-
-            if (filePath.EndsWith(".xlsx") || filePath.EndsWith(".xls")) ListPEZ = LoadExcel(filePath);
-            else if (filePath.EndsWith(".csv")) ListPEZ = LoadCsv(filePath);
+            List<PEZ> ListPEZ = MainWindowViewModel.BaseListPEZs;
 
             _newPEZ = ListPEZ.FirstOrDefault(x => x.IdNumber == id) ?? new PEZ();
+
+            QuantityPEZ = NewPEZ.Quantity.ToString();
         }
 
-        private List<PEZ> LoadExcel(string filePath)
-        {
-            List<PEZ> ListPEZ = new List<PEZ>();
+        public void AddEditPEZ(PEZ myData)
+        {      
+            if (string.IsNullOrEmpty(NewPEZ.Name) || string.IsNullOrEmpty(NewPEZ.Mark) || string.IsNullOrEmpty(QuantityPEZ))
+            {
+                DetailsVMObject.ShowError("Ошибка!", "Заполните все поля!");
+                return;
+            }
+            else
+            {                
 
-            try
-            {               
-                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-                using FileStream? stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
-                using IExcelDataReader? reader = ExcelReaderFactory.CreateReader(stream);
-
-                var result = reader.AsDataSet();
-                var table = result.Tables[0];
-
-                foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
+                if (int.TryParse(QuantityPEZ, out int result)) NewPEZ.Quantity = result;
+                else
                 {
-                    ListPEZ.Add(
-                            new PEZ
-                            {
-                                IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
-                                Mark = row[1]?.ToString(),
-                                Name = row[2]?.ToString(),
-                                Quantity = int.TryParse(row[3]?.ToString(), out int quantity) ? quantity : 0
-                            }
-                        );
+                    DetailsVMObject.ShowError("Ошибка!", "Введено некорректное значение в поле \"Количество\"!");
+                    return;
                 }
 
-                
-            }
-            catch (Exception ex)
-            {
-                DetailsVMObject.ShowError("Ошибка!", ex.ToString());
-            }
-
-            return ListPEZ;
-        }
-
-        private List<PEZ> LoadCsv(string filePath)
-        {
-            List<PEZ> ListPEZ = new List<PEZ>();
-
-            try
-            {
-                Encoding? encoding = Encoding.UTF8;
-
-                byte[]? bytes = File.ReadAllBytes(filePath);
-                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) encoding = Encoding.UTF8;
-                else encoding = Encoding.GetEncoding("Windows-1251");
-
-                string[]? lines = File.ReadAllLines(filePath, encoding);
-
-                foreach (string? line in lines.Skip(1))
+                if (NewPEZ.IdNumber == 0)
                 {
-                    string[]? parts = line.Split(';');
-                    if (parts.Length < 4) continue;
-                    else
+                    NewPEZ.IdNumber = MainWindowViewModel.BaseListPEZs.Max().IdNumber + 1;
+                    MainWindowViewModel.BaseListPEZs.Add(NewPEZ);
+                }
+                else
+                {
+                    if (NewPEZ != null)
                     {
-                        ListPEZ.Add(
-                            new PEZ
-                            {
-                                IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
-                                Mark = parts[1]?.ToString(),
-                                Name = parts[2]?.ToString(),
-                                Quantity = int.TryParse(parts[3]?.ToString(), out int quantity) ? quantity : 0
-                            }
-                        );
+                        NewPEZ.Name = myData.Name;
+                        NewPEZ.Mark = myData.Mark;
+                        NewPEZ.Quantity = myData.Quantity;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                DetailsVMObject.ShowError("Ошибка!", ex.ToString());
-            }
-
-            return ListPEZ;
+            }            
         }
+
+        public async void SaveInFile(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath)) return;
+        }        
     }
 }
