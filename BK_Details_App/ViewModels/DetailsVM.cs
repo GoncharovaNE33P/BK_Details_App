@@ -409,19 +409,15 @@ namespace BK_Details_App.ViewModels
                 
                 foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
                 {
-                    if (row[2].ToString() == "метка" || row[2].ToString() == "заземление") continue;
-                    else
-                    {
-                        MainWindowViewModel.BaseListPEZs.Add(
-                            new PEZ
-                            {
-                                IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
-                                Mark = row[1]?.ToString(),
-                                Name = row[2]?.ToString(),
-                                Quantity = int.TryParse(row[3]?.ToString(), out int quantity) ? quantity : 0
-                            }
-                        );
-                    }
+                    MainWindowViewModel.BaseListPEZs.Add(
+                       new PEZ
+                       {
+                           IdNumber = int.TryParse(row[0]?.ToString(), out int id) ? id : 0,
+                           Mark = row[1]?.ToString(),
+                           Name = row[2]?.ToString(),
+                           Quantity = int.TryParse(row[3]?.ToString(), out int quantity) ? quantity : 0
+                       }
+                    );
                 }
 
                 CollectionPEZs.Clear();
@@ -458,19 +454,15 @@ namespace BK_Details_App.ViewModels
                     string[]? parts = line.Split(';');
                     if (parts.Length < 4) continue;
 
-                    if (parts[2] == "метка" || parts[2] == "заземление") continue;
-                    else
-                    {
-                        MainWindowViewModel.BaseListPEZs.Add(
-                            new PEZ
-                            {
-                                IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
-                                Mark = parts[1]?.ToString(),
-                                Name = parts[2]?.ToString(),
-                                Quantity = int.TryParse(parts[3]?.ToString(), out int quantity) ? quantity : 0
-                            }
-                        );
-                    }
+                    MainWindowViewModel.BaseListPEZs.Add(
+                        new PEZ
+                        {
+                            IdNumber = int.TryParse(parts[0]?.ToString(), out int id) ? id : 0,
+                            Mark = parts[1]?.ToString(),
+                            Name = parts[2]?.ToString(),
+                            Quantity = int.TryParse(parts[3]?.ToString(), out int quantity) ? quantity : 0
+                        }
+                    );
                 }
 
                 CollectionPEZs.Clear();
@@ -491,57 +483,64 @@ namespace BK_Details_App.ViewModels
 
         public void ExportToExcel()
         {
-            if (FilePath == null)
+            try
             {
-                ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
-                return;
+                if (FilePath == null)
+                {
+                    ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
+                    return;
+                }
+
+                string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string folderPath = Path.Combine(desktopPath, "REPORT_Comparison");
+                Directory.CreateDirectory(folderPath);
+
+                string filePath = Path.Combine(folderPath, "REPORT.xlsx");
+
+                XLWorkbook workbook;
+                workbook = new XLWorkbook();
+
+                string sheetName = "REPORT";
+                var sheet = workbook.Worksheets.Contains(sheetName)
+                ? workbook.Worksheet(sheetName)
+                : workbook.AddWorksheet(sheetName);
+
+                //Определяем первую пустую строку
+                sheet.Cell(1, 1).Value = NameFile;
+                sheet.Cell(1, 1).Style.Font.Bold = true;
+                sheet.Cell(1, 1).Style.Font.FontSize = 14;
+                sheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet.Cell(1, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                sheet.Cell(1, 1).Style.Border.OutsideBorderColor = XLColor.Black;
+                sheet.Cell(1, 2).Value = "Материалы";
+                sheet.Cell(1, 2).Style.Font.Bold = true;
+                sheet.Cell(1, 2).Style.Font.FontSize = 14;
+                sheet.Cell(1, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                sheet.Cell(1, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                sheet.Cell(1, 2).Style.Border.OutsideBorderColor = XLColor.Black;
+                int lastRow = sheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
+
+                foreach (PEZ pez in MainWindowViewModel.BaseListPEZs)
+                {
+                    sheet.Cell(lastRow, 1).Value = pez.Name;
+                    sheet.Cell(lastRow, 2).Value = pez.Matched;
+                    sheet.Cell(lastRow, 1).Style.Fill.BackgroundColor = XLColor.FromHtml(pez.Color);
+                    sheet.Cell(lastRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    sheet.Cell(lastRow, 1).Style.Border.OutsideBorderColor = XLColor.Black;
+                    sheet.Cell(lastRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    sheet.Cell(lastRow, 2).Style.Border.OutsideBorderColor = XLColor.Black;
+                    lastRow++;
+                }
+
+                //Сохраняем файл
+                workbook.SaveAs(filePath);
+
+                ShowSuccess("Успех!", "Отчёт выгружен в файл Excel!");
             }
-
-            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string folderPath = Path.Combine(desktopPath, "REPORT_Comparison");
-            Directory.CreateDirectory(folderPath);
-
-            string filePath = Path.Combine(folderPath, "REPORT.xlsx");
-
-            XLWorkbook workbook;
-            workbook = new XLWorkbook();
-
-            string sheetName = "REPORT";
-            var sheet = workbook.Worksheets.Contains(sheetName)
-            ? workbook.Worksheet(sheetName)
-            : workbook.AddWorksheet(sheetName);
-
-            //Определяем первую пустую строку
-            sheet.Cell(1, 1).Value = NameFile;
-            sheet.Cell(1, 1).Style.Font.Bold = true;
-            sheet.Cell(1, 1).Style.Font.FontSize = 14;
-            sheet.Cell(1, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            sheet.Cell(1, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            sheet.Cell(1, 1).Style.Border.OutsideBorderColor = XLColor.Black;
-            sheet.Cell(1, 2).Value = "Материалы";
-            sheet.Cell(1, 2).Style.Font.Bold = true;
-            sheet.Cell(1, 2).Style.Font.FontSize = 14;
-            sheet.Cell(1, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            sheet.Cell(1, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            sheet.Cell(1, 2).Style.Border.OutsideBorderColor = XLColor.Black;
-            int lastRow = sheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
-            
-            foreach (PEZ pez in MainWindowViewModel.BaseListPEZs)
+            catch (Exception ex)
             {
-                sheet.Cell(lastRow, 1).Value = pez.Name;
-                sheet.Cell(lastRow, 2).Value = pez.Matched;
-                sheet.Cell(lastRow, 1).Style.Fill.BackgroundColor = XLColor.FromHtml(pez.Color);
-                sheet.Cell(lastRow, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                sheet.Cell(lastRow, 1).Style.Border.OutsideBorderColor = XLColor.Black;
-                sheet.Cell(lastRow, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                sheet.Cell(lastRow, 2).Style.Border.OutsideBorderColor = XLColor.Black;
-                lastRow++;
-            }            
-
-            //Сохраняем файл
-            workbook.SaveAs(filePath);
-
-            ShowSuccess("Успех!", "Отчёт выгружен в файл Excel!");
+                ShowError("Ошибка!", ex.ToString());
+            }
         }
 
         #endregion
@@ -762,23 +761,43 @@ namespace BK_Details_App.ViewModels
 
         public void MatchPEZMaterials()
         {
-            string[]? materialNames = MaterialsList.Select(x => x.Name).ToArray(); // список имен в массив, потому что вроде как ExtractOne лучше/в принципе работает с массивами
-            FuzzySharp.SimilarityRatio.Scorer.IRatioScorer? scorer = ScorerCache.Get<WeightedRatioScorer>();
-            
-            Parallel.ForEach(CollectionPEZs, _element =>
+            try
             {
-                FuzzySharp.Extractor.ExtractedResult<string>? match = FuzzySharp.Process.ExtractOne(_element.Name, materialNames, s => s, scorer);
+                string[]? materialNames = MaterialsList.Select(x => x.Name).ToArray(); // список имен в массив, потому что вроде как ExtractOne лучше/в принципе работает с массивами
+                FuzzySharp.SimilarityRatio.Scorer.IRatioScorer? scorer = ScorerCache.Get<WeightedRatioScorer>();
 
-                _element.Matched = materialNames[match.Index];
-
-                _element.Color = match.Score switch
+                Parallel.ForEach(CollectionPEZs, _element =>
                 {
-                    100 => "#66C190",
-                    > 70 => "#FFE666",
-                    _ => "#FF9166"
-                };
-            });
+                    FuzzySharp.Extractor.ExtractedResult<string>? match = FuzzySharp.Process.ExtractOne(_element.Name, materialNames, s => s, scorer);
+
+                    _element.Matched = materialNames[match.Index];
+
+                    _element.Color = match.Score switch
+                    {
+                        100 => "#66C190",
+                        > 70 => "#FFE666",
+                        _ => "#FF9166"
+                    };
+
+                    _element.Color = match.Score switch
+                    {
+                        100 => "#66C190",
+                        > 70 => "#FFE666",
+                        _ => "#FF9166"
+                    };
+
+                    if (_element.Name == "метка" || _element.Name == "заземление")
+                    {
+                        _element.Color = "#FFFFFF";
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowError("Ошибка!", ex.ToString());
+            }
         }
+        
 
         public void AddMaterial(Materials material)
         {
