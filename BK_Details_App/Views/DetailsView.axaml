@@ -144,7 +144,7 @@
 			<!--Правая часть-->
 			<Border Grid.Column="1" Classes="ListRight">
 				<Grid Grid.Column="1" RowDefinitions="Auto, 93*">
-					<Grid Grid.Row="0" ColumnDefinitions="86*, 7*">
+					<Grid Grid.Row="0" ColumnDefinitions="86*, 7*, 7*">
 						<ComboBox Classes="ChoiceGroup" Grid.Column="0" HorizontalAlignment="Stretch" ItemsSource="{Binding GroupsList}" SelectedItem="{Binding SelectedGroup}">
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
@@ -152,7 +152,10 @@
 								</DataTemplate>
 							</ComboBox.ItemTemplate>
 						</ComboBox>
-						<Button Background="Transparent" Grid.Column="1" Command="{Binding ToFavouritesView}">
+						<Button Background="Transparent" Grid.Column="1" Command="{Binding AddMaterial}"><!---->
+							<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/add_material.png"></Image>
+						</Button>
+						<Button Background="Transparent" Grid.Column="2" Command="{Binding ToFavouritesView}">
 							<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/heart-search.png"></Image>
 						</Button>
 					</Grid>

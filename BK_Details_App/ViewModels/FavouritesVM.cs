@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Aspose.Cells;
 using BK_Details_App.Models;
+using DynamicData.Kernel;
 using MsBox.Avalonia;
 using ReactiveUI;
 
@@ -57,6 +58,7 @@ namespace BK_Details_App.ViewModels
         public FavouritesVM()
         {
             FilteredFavs = GetMaterials();
+            if (FilteredFavs.Count == 0) NothingFound = true;
             GroupsList = [new Groups() { Name = "Все группы" }, .. DetailsVMObj.GroupsList];
             CountItemsFavs = FilteredFavs.Count;
             CountItemsFileFavs = FilteredFavs.Count;
@@ -65,9 +67,16 @@ namespace BK_Details_App.ViewModels
 
         List<Materials> GetMaterials()
         {
-            List<string> buf = [.. DetailsVMObj.ReadFavorites()];
-            FavsList = DetailsVMObj.MaterialsList.Where(x => buf.Contains(x.Name)).ToList();
-            return FavsList;
+            List<string> buf = new List<string>(DetailsVMObj.ReadFavorites());
+            if (buf.Count > 0)
+            {
+                FavsList = DetailsVMObj.MaterialsList.Where(x => buf.Contains(x.Name)).ToList();
+                return FavsList;
+            }
+            else
+            {
+                return new List<Materials>();
+            }
         }
 
         void FilterFavs()
@@ -113,7 +122,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                MessageBoxManager.GetMessageBoxStandard("FilterFavs: Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
             }
         }
 

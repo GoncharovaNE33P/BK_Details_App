@@ -118,7 +118,7 @@ namespace BK_Details_App.ViewModels
             {
                 if (!Design.IsDesignMode)
                 {
-                    MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                    MessageBoxManager.GetMessageBoxStandard("DetailsVM: Ошибка", ex.Message + "\n" + ex.StackTrace, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
                 }
             }
         }
@@ -191,7 +191,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                MessageBoxManager.GetMessageBoxStandard("FilterMaterials: Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
             }
         }
 
@@ -212,7 +212,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxManager.GetMessageBoxStandard("Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                MessageBoxManager.GetMessageBoxStandard("FilterCategories: Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
             }
         }
 
@@ -272,7 +272,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("FilterPEZs: Ошибка!", ex.ToString());
             }
         }
         #endregion
@@ -362,7 +362,7 @@ namespace BK_Details_App.ViewModels
 
             CountItemsMaterials = MaterialsList.Count();
             CountItemsFileMaterials = MaterialsList.Count();
-
+            MainWindowViewModel.AllMaterials = MaterialsList;
         }
 
         public async Task OpenFileAsync()
@@ -389,7 +389,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("OpenFileAsync: Ошибка!", ex.ToString());
             }
         }
 
@@ -434,7 +434,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("LoadExcel: Ошибка!", ex.ToString());
             }
         }
 
@@ -483,7 +483,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("LoadCsv: Ошибка!", ex.ToString());
             }
         }
 
@@ -549,7 +549,7 @@ namespace BK_Details_App.ViewModels
         public List<string> ReadFavorites()
         {
             List<string> values = new List<string>();
-            string filePath = "test.xlsx";
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
             if (!File.Exists(filePath))
                 //throw new FileNotFoundException("Файл не найден в ReadFavorites", filePath);
@@ -577,7 +577,7 @@ namespace BK_Details_App.ViewModels
 
         public async Task AddToFavorite(string _material)
         {
-            string filePath = "test.xlsx";
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
             if (Favs.Any(x => x == _material))
             {
@@ -619,9 +619,10 @@ namespace BK_Details_App.ViewModels
                 //Определяем первую пустую строку
                 int lastRow = sheet.Cells.MaxDataRow + 1;
                 sheet.Cells[lastRow, 0].PutValue(_material);
-
+                
                 //Сохраняем файл
                 workbook.Save(filePath);
+                DeleteCopyrigt();
             }
 
             //ReadFavorites();
@@ -680,7 +681,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("ShowAddPEZ: Ошибка!", ex.ToString());
             }
         }
 
@@ -725,7 +726,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("ShowEditPEZ: Ошибка!", ex.ToString());
             }
         }
 
@@ -767,7 +768,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("DeletePEZ: Ошибка!", ex.ToString());
             }
         }
 
@@ -775,7 +776,7 @@ namespace BK_Details_App.ViewModels
 
         public void MatchPEZMaterials()
         {
-            string[]? materialNames = MaterialsList.Select(x => x.Name).ToArray(); // Кэшируем список имен
+            string[]? materialNames = MaterialsList.Select(x => x.Name).ToArray(); // список имен в массив, потому что вроде как ExtractOne лучше/в принципе работает с массивами
             FuzzySharp.SimilarityRatio.Scorer.IRatioScorer? scorer = ScorerCache.Get<WeightedRatioScorer>();
             
             Parallel.ForEach(CollectionPEZs, _element =>
@@ -791,6 +792,57 @@ namespace BK_Details_App.ViewModels
                     _ => "#FF9166"
                 };
             });
+        }
+
+        public void AddMaterial()
+        {
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
+            Workbook wb = new Workbook(filePath);
+
+            WorksheetCollection collection = wb.Worksheets;
+            Worksheet currentWorksheet = collection[SelectedGroup.Name];
+
+            int neededRow = -1;
+            for (int i = 0; i < currentWorksheet.Cells.Rows.Count; i++)
+            {
+                if (currentWorksheet.Cells[i, 1].StringValue == SelectedCategory.Name)
+                {
+                    neededRow = currentWorksheet.Cells[i, 0].Row + MaterialsList.Count(x => x.CategoryNavigation.Name == SelectedCategory.Name) + 1;
+                    currentWorksheet.Cells.InsertRow(neededRow);
+                }
+
+                if (i == neededRow)
+                {
+                    currentWorksheet.Cells[i, 0].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
+                    currentWorksheet.Cells[i, 1].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
+                    currentWorksheet.Cells[i, 2].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
+                    currentWorksheet.Cells[i, 3].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
+                    currentWorksheet.Cells[i, 4].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
+                    break;
+                }
+            }
+            
+            wb.Save(filePath);
+            DeleteCopyrigt();
+        }
+
+        public void DeleteCopyrigt()
+        {
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
+            Workbook workbook = new Workbook(filePath);
+            // Перебираем все листы
+            for (int i = workbook.Worksheets.Count - 1; i >= 0; i--)
+            {
+                Worksheet sheet = workbook.Worksheets[i];
+
+                // Удаляем лист, если имя явно связано с предупреждением
+                if (sheet.Name.ToLower().Contains("Evaluation") || sheet.Name.ToLower().Contains("Warning"))
+                {
+                    workbook.Worksheets.RemoveAt(i);
+                    continue;
+                }
+            }
+            workbook.Save(filePath);
         }
     }
 }
