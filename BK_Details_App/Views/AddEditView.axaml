@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:vm="using:BK_Details_App.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="BK_Details_App.AddEditView"
+			 x:DataType="vm:AddEditVM">
+	<Grid RowDefinitions="8*, Auto, 78*">
+		<!--Верхняя панель с лого и кнопками-->
+		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto">
+			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png" Height="45" Width="80"></Image>
+			<TextBlock Grid.Column="1" Classes="HeadPage" Text="{Binding Header}"></TextBlock>
+			<StackPanel Orientation="Horizontal" Grid.Column="2">
+				<Button Classes="ChooseUploadFile" Width="230" Command="{Binding ToBackCommand}" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Назад"></Button>
+				<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right" Content="{Binding Button}" Command="{Binding AddEdit}"></Button>
+			</StackPanel>
+		</Grid>
+
+		<Grid Grid.Row="2">
+			<StackPanel HorizontalAlignment="Center">
+				<TextBlock Classes="HeadTextBox" Text="Введите наименование:"></TextBlock>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Name}" TextWrapping="Wrap" Height="60"></TextBox>
+				<TextBlock Classes="HeadTextBox" Text="Введите единицы измерения:"></TextBlock>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Measurement}" TextWrapping="Wrap" Height="60"></TextBox>
+				<TextBlock Classes="HeadTextBox" Text="Введите аналоги:"></TextBlock>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Analogs}" TextWrapping="Wrap" Height="60"></TextBox>
+				<TextBlock Classes="HeadTextBox" Text="Введите примечание:"></TextBlock>
+				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Note}" TextWrapping="Wrap" Height="60"></TextBox>
+			</StackPanel>
+		</Grid>
+	</Grid>
+</UserControl>

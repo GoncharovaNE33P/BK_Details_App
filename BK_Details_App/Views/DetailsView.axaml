@@ -152,7 +152,7 @@
 								</DataTemplate>
 							</ComboBox.ItemTemplate>
 						</ComboBox>
-						<Button Background="Transparent" Grid.Column="1" Command="{Binding AddMaterial}"><!---->
+						<Button Background="Transparent" Grid.Column="1" Command="{Binding ShowAddMaterials}"><!---->
 							<Image Classes="FavoritesButton" Source="avares://BK_Details_App/Assets/add_material.png"></Image>
 						</Button>
 						<Button Background="Transparent" Grid.Column="2" Command="{Binding ToFavouritesView}">

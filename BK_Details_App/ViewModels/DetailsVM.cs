@@ -23,6 +23,7 @@ using FuzzySharp.SimilarityRatio.Scorer.Composite;
 using FuzzySharp.SimilarityRatio;
 using ClosedXML.Excel;
 using Avalonia.Media;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace BK_Details_App.ViewModels
 {
@@ -39,10 +40,10 @@ namespace BK_Details_App.ViewModels
         List<Materials> _filteredMaterials = new();
         public List<Materials> FilteredMaterials { get => _filteredMaterials; set => this.RaiseAndSetIfChanged(ref _filteredMaterials, value); }
 
-        List<Groups> _groupsList = new();
-        public List<Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
-        Groups _selectedGroup = new();
-        public Groups SelectedGroup { get => _selectedGroup; set { this.RaiseAndSetIfChanged(ref _selectedGroup, value); FilterMaterials(); FilterCategories(); } }
+        List<BK_Details_App.Models.Groups> _groupsList = new();
+        public List<BK_Details_App.Models.Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
+        BK_Details_App.Models.Groups _selectedGroup = new();
+        public BK_Details_App.Models.Groups SelectedGroup { get => _selectedGroup; set { this.RaiseAndSetIfChanged(ref _selectedGroup, value); FilterMaterials(); FilterCategories(); } }
 
         List<Category> _categoriesList = new();
         public List<Category> CategoriesList { get => _categoriesList; set => this.RaiseAndSetIfChanged(ref _categoriesList, value); }
@@ -94,6 +95,7 @@ namespace BK_Details_App.ViewModels
         public int SelectedFilter { get => _selectedFilter; set { _selectedFilter = value; FiltersPEZs(); } }
 
         private Window? _addPEZWindow;
+        private Window? _addWindow;
 
         #endregion
 
@@ -279,11 +281,11 @@ namespace BK_Details_App.ViewModels
 
         #region Методы считывания данных из Excel
 
-        void ReadFromExcelFile()
+        public void ReadFromExcelFile()
         {
             // Загрузить файл Excel
             string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
-            Workbook wb = new Workbook(filePath);
+            Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
 
             // Получить все рабочие листы
             WorksheetCollection collection = wb.Worksheets;
@@ -292,9 +294,9 @@ namespace BK_Details_App.ViewModels
             for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
             {
                 // Получить рабочий лист, используя его индекс
-                Worksheet worksheet = collection[worksheetIndex];
+                Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
 
-                Groups groups = new Groups()
+                BK_Details_App.Models.Groups groups = new BK_Details_App.Models.Groups()
                 {
                     GroupIdNumber = random.Next(1, 1000),
                     Name = worksheet.Name
@@ -312,7 +314,7 @@ namespace BK_Details_App.ViewModels
                     // Перебрать каждый столбец в выбранной строке
                     for (int j = 1; j < cols; j++) //начинаем со столбца с наименованием
                     {
-                        Cell cell = worksheet.Cells[i, j];
+                        Aspose.Cells.Cell cell = worksheet.Cells[i, j];
                         Aspose.Cells.Style style = cell.GetStyle();
 
                         if (cell.StringValue == "") break;
@@ -556,8 +558,8 @@ namespace BK_Details_App.ViewModels
                 return values;
             else
             {
-                Workbook workbook = new Workbook(filePath);
-                Worksheet sheet = workbook.Worksheets["Избранное"];
+                Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook(filePath);
+                Aspose.Cells.Worksheet sheet = workbook.Worksheets["Избранное"];
 
                 if (sheet == null)
                     throw new ArgumentException("Лист не найден");
@@ -582,47 +584,31 @@ namespace BK_Details_App.ViewModels
             if (Favs.Any(x => x == _material))
             {
                 MessageBoxManager.GetMessageBoxStandard("Внимание", _material + " уже в избранном", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
-                return; //!!!!!!!!!!!!!!!!!!!!!!!!!!сказать что уже в избранном
+                return;
             }
             else
             {
-                /*using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    fs.Seek(0, SeekOrigin.End); // Переход в конец файла перед записью
-
-                    using (BinaryWriter writer = new BinaryWriter(fs))
-                    {
-                        writer.Write(_material);
-                    }
-                }*/
-
-                //Проверяем, существует ли файл
-                Workbook workbook;
+                XLWorkbook workbook;
                 if (File.Exists(filePath))
                 {
-                    workbook = new Workbook(filePath);
+                    workbook = new XLWorkbook(filePath);
                 }
                 else
                 {
-                    workbook = new Workbook();
+                    workbook = new XLWorkbook();
                 }
 
                 string sheetName = "Избранное";
-                Worksheet sheet = workbook.Worksheets[sheetName];
-                if (sheet == null)
-                {
-                    int sheetIndex = workbook.Worksheets.Add();
-                    sheet = workbook.Worksheets[sheetIndex];
-                    sheet.Name = sheetName;
-                }
+                var sheet = workbook.Worksheets.Contains(sheetName)
+                ? workbook.Worksheet(sheetName)
+                : workbook.AddWorksheet(sheetName);
 
                 //Определяем первую пустую строку
-                int lastRow = sheet.Cells.MaxDataRow + 1;
-                sheet.Cells[lastRow, 0].PutValue(_material);
+                int lastRow = sheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
+                sheet.Cell(lastRow, 1).Value = _material;
                 
                 //Сохраняем файл
-                workbook.Save(filePath);
-                DeleteCopyrigt();
+                workbook.SaveAs(filePath);
             }
 
             //ReadFavorites();
@@ -794,55 +780,85 @@ namespace BK_Details_App.ViewModels
             });
         }
 
-        public void AddMaterial()
+        public void AddMaterial(Materials material)
         {
             string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
-            Workbook wb = new Workbook(filePath);
+            XLWorkbook wb = new XLWorkbook(filePath);
 
-            WorksheetCollection collection = wb.Worksheets;
-            Worksheet currentWorksheet = collection[SelectedGroup.Name];
+            foreach (var ws in wb.Worksheets)
+            {
+                foreach (var cell in ws.CellsUsed(c => c.HasFormula))
+                {
+                    if (string.IsNullOrWhiteSpace(cell.FormulaA1))
+                        cell.Clear(); // Или cell.Value = null;
+                }
+            }
+
+            var currentWorksheet = wb.Worksheet(SelectedGroup.Name);
 
             int neededRow = -1;
-            for (int i = 0; i < currentWorksheet.Cells.Rows.Count; i++)
+            int lastRow = currentWorksheet.LastRowUsed()?.RowNumber() ?? 0;
+            for (int i = 1; i < lastRow; i++)
             {
-                if (currentWorksheet.Cells[i, 1].StringValue == SelectedCategory.Name)
+                if (currentWorksheet.Cell(i, 2).GetString() == SelectedCategory.Name)
                 {
-                    neededRow = currentWorksheet.Cells[i, 0].Row + MaterialsList.Count(x => x.CategoryNavigation.Name == SelectedCategory.Name) + 1;
-                    currentWorksheet.Cells.InsertRow(neededRow);
+                    neededRow = i + MaterialsList.Count(x => x.CategoryNavigation.Name == SelectedCategory.Name) + 1;
+                    currentWorksheet.Row(neededRow).InsertRowsAbove(1);
                 }
 
                 if (i == neededRow)
                 {
-                    currentWorksheet.Cells[i, 0].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
-                    currentWorksheet.Cells[i, 1].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
-                    currentWorksheet.Cells[i, 2].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
-                    currentWorksheet.Cells[i, 3].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
-                    currentWorksheet.Cells[i, 4].PutValue(MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1);
+                    currentWorksheet.Cell(i, 1).Value = MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1;
+                    currentWorksheet.Cell(i, 2).Value = material.Name;
+                    currentWorksheet.Cell(i, 3).Value = material.Measurement;
+                    currentWorksheet.Cell(i, 4).Value = material.Analogs;
+                    currentWorksheet.Cell(i, 5).Value = material.Note;
                     break;
                 }
             }
             
-            wb.Save(filePath);
-            DeleteCopyrigt();
+            wb.SaveAs(filePath);
         }
 
-        public void DeleteCopyrigt()
+        public void ShowAddMaterials()
         {
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
-            Workbook workbook = new Workbook(filePath);
-            // Перебираем все листы
-            for (int i = workbook.Worksheets.Count - 1; i >= 0; i--)
+            try
             {
-                Worksheet sheet = workbook.Worksheets[i];
+                int id = 0;
 
-                // Удаляем лист, если имя явно связано с предупреждением
-                if (sheet.Name.ToLower().Contains("Evaluation") || sheet.Name.ToLower().Contains("Warning"))
+                if (_addWindow != null) return;
+
+                var viewModel = new AddEditVM();
+
+                _addWindow = new Window
                 {
-                    workbook.Worksheets.RemoveAt(i);
-                    continue;
-                }
+                    MinHeight = 600,
+                    MinWidth = 1500,
+                    Content = new AddEditView { DataContext = viewModel },
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    CanResize = false,
+                    Title = "BK_Details_App",
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png")))
+                };
+
+                viewModel.CloseAction = () =>
+                {
+                    if (viewModel.CloseAction != null)
+                    {
+                        _addWindow.Closing -= PreventClosing;
+                        _addWindow.Close();
+                        _addWindow = null;
+                    }
+                };
+
+                _addWindow.Closing += PreventClosing;
+
+                _addWindow.Show();
             }
-            workbook.Save(filePath);
+            catch (Exception ex)
+            {
+                ShowError("ShowAdd: Ошибка!", ex.ToString());
+            }
         }
     }
 }
