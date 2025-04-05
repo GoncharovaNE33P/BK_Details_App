@@ -114,6 +114,8 @@ namespace BK_Details_App.ViewModels
                 {
                     FilePath = MainWindowViewModel.FilePath;
                     NameFile = FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
+                    CountItemsFilePEZ = MainWindowViewModel.BaseListPEZs.Count();
+                    CountItemsPEZs = MainWindowViewModel.BaseListPEZs.Count();
                 }
             }
             catch (Exception ex)
@@ -406,7 +408,7 @@ namespace BK_Details_App.ViewModels
                 var result = reader.AsDataSet();
                 var table = result.Tables[0];
 
-                
+                MainWindowViewModel.BaseListPEZs.Clear();
                 foreach (DataRow row in table.Rows.Cast<DataRow>().Skip(1))
                 {
                     MainWindowViewModel.BaseListPEZs.Add(
@@ -419,10 +421,9 @@ namespace BK_Details_App.ViewModels
                        }
                     );
                 }
-
+                
+                ListPEZs = MainWindowViewModel.BaseListPEZs.ToList();
                 CollectionPEZs.Clear();
-                ListPEZs.Clear();
-                ListPEZs = MainWindowViewModel.BaseListPEZs;
                 CollectionPEZs.AddRange(ListPEZs);
 
                 CountItemsFilePEZ = ListPEZs.Count();
@@ -447,8 +448,8 @@ namespace BK_Details_App.ViewModels
                 else encoding = Encoding.GetEncoding("Windows-1251");
 
                 string[]? lines = File.ReadAllLines(filePath, encoding);
-                CollectionPEZs.Clear();
 
+                MainWindowViewModel.BaseListPEZs.Clear();
                 foreach (string? line in lines.Skip(1))
                 {
                     string[]? parts = line.Split(';');
@@ -464,10 +465,9 @@ namespace BK_Details_App.ViewModels
                         }
                     );
                 }
-
+                               
+                ListPEZs = MainWindowViewModel.BaseListPEZs.ToList();
                 CollectionPEZs.Clear();
-                ListPEZs.Clear();
-                ListPEZs = MainWindowViewModel.BaseListPEZs;
                 CollectionPEZs.AddRange(ListPEZs);
 
                 CountItemsFilePEZ = ListPEZs.Count();
@@ -726,7 +726,7 @@ namespace BK_Details_App.ViewModels
             {
                 string Messege = "Вы уверенны, что хотите удалить данное ПЭЗ?";
                 ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Сообщение с уведомлением об удалении!", Messege, ButtonEnum.YesNo).ShowAsync();
-                PEZ? PEZRemove = CollectionPEZs.FirstOrDefault(p => p.IdNumber == id);                
+                PEZ? PEZRemove = MainWindowViewModel.BaseListPEZs.FirstOrDefault(p => p.IdNumber == id);                
 
                 switch (result)
                 {
@@ -734,10 +734,14 @@ namespace BK_Details_App.ViewModels
                         {
                             if (PEZRemove != null)
                             {
-                                CollectionPEZs.Remove(PEZRemove);
+                                MainWindowViewModel.BaseListPEZs.Remove(PEZRemove);
+                                CollectionPEZs.Clear();
+                                CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
                                 ListPEZs = CollectionPEZs.ToList();
                                 CountItemsFilePEZ = ListPEZs.Count();
                                 CountItemsPEZs = ListPEZs.Count();
+
+                                await SaveToFileAsync(FilePath);
                             }
                             Messege = "ПЭЗ удалён!";
                             ShowSuccess("Сообщение с уведомлением об удалении!", Messege);
@@ -755,6 +759,64 @@ namespace BK_Details_App.ViewModels
             {
                 ShowError("DeletePEZ: Ошибка!", ex.ToString());
             }
+        }
+
+        private async Task SaveToFileAsync(string filePath)
+        {
+            try
+            {
+                if (filePath.EndsWith(".csv"))
+                {
+                    await SaveToCsvAsync(filePath);
+                }
+                else if (filePath.EndsWith(".xls") || filePath.EndsWith(".xlsx"))
+                {
+                    SaveToExcel(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("SaveToFileAsync: Ошибка!", ex.ToString());
+            }
+        }
+
+        private async Task SaveToCsvAsync(string filePath)
+        {
+            var lines = new List<string>
+            {
+                "#;Метка;Имя;Количество"
+            };
+
+            foreach (PEZ? pez in MainWindowViewModel.BaseListPEZs)
+            {
+                lines.Add($"{pez.IdNumber};{pez.Mark};{pez.Name};{pez.Quantity}");
+            }
+
+            await File.WriteAllLinesAsync(filePath, lines, Encoding.GetEncoding("Windows-1251"));
+        }
+
+        private void SaveToExcel(string filePath)
+        {
+            using XLWorkbook workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add(NameFile);
+
+            // Заголовки
+            worksheet.Cell(1, 1).Value = "#";
+            worksheet.Cell(1, 2).Value = "Метка";
+            worksheet.Cell(1, 3).Value = "Имя";
+            worksheet.Cell(1, 4).Value = "Количество";
+
+            int row = 2;
+            foreach (PEZ? pez in MainWindowViewModel.BaseListPEZs)
+            {
+                worksheet.Cell(row, 1).Value = pez.IdNumber;
+                worksheet.Cell(row, 2).Value = pez.Mark;
+                worksheet.Cell(row, 3).Value = pez.Name;
+                worksheet.Cell(row, 4).Value = pez.Quantity;
+                row++;
+            }
+
+            workbook.SaveAs(filePath);
         }
 
         #endregion
@@ -796,8 +858,7 @@ namespace BK_Details_App.ViewModels
             {
                 ShowError("Ошибка!", ex.ToString());
             }
-        }
-        
+        }       
 
         public void AddMaterial(Materials material)
         {
