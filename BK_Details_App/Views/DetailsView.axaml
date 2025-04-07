@@ -172,7 +172,7 @@
 									<StackPanel.ContextMenu>
 										<ContextMenu>
 											<MenuItem Header="Добавить в избранное" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
-											<MenuItem Header="Редактировать" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+											<MenuItem Header="Редактировать" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).ShowAddMaterials}" CommandParameter="{Binding}"></MenuItem>
 											<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
 										</ContextMenu>
 									</StackPanel.ContextMenu>

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BK_Details_App.Models
 {
-    internal class Materials
+    public partial class Materials
     {
         public int IdNumber { get; set; }
         public string Name { get; set; }

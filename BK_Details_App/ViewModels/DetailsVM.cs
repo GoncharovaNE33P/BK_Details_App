@@ -283,10 +283,12 @@ namespace BK_Details_App.ViewModels
 
         #region Методы считывания данных из Excel
 
-        public void ReadFromExcelFile()
+        /*public void ReadFromExcelFile()
         {
             // Загрузить файл Excel
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
+            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin")-1), "Materials", "materials.xlsx");
+            //string f = "C:\\Users\\user\\source\\repos\\BK_Details_App\\BK_Details_App\\Materials\\materials.xlsx";
+            //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
             Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
 
             // Получить все рабочие листы
@@ -367,6 +369,91 @@ namespace BK_Details_App.ViewModels
             CountItemsMaterials = MaterialsList.Count();
             CountItemsFileMaterials = MaterialsList.Count();
             MainWindowViewModel.AllMaterials = MaterialsList;
+        }*/
+
+        public void ReadFromExcelFile()
+        {
+            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+            Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
+            WorksheetCollection collection = wb.Worksheets;
+            Random random = new Random();
+
+            _groupsList.Clear();
+            _categoriesList.Clear();
+            _materialsList.Clear();
+
+            for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
+            {
+                Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
+
+                var group = new BK_Details_App.Models.Groups()
+                {
+                    GroupIdNumber = random.Next(1, 1000),
+                    Name = worksheet.Name
+                };
+                _groupsList.Add(group);
+
+                Category? lastCategory = null;
+                bool lastWasBold = false;
+                int rows = worksheet.Cells.MaxDataRow;
+                int cols = worksheet.Cells.MaxDataColumn;
+
+                for (int i = 1; i <= rows; i++)
+                {
+                    for (int j = 1; j <= cols; j++)
+                    {
+                        var cell = worksheet.Cells[i, j];
+                        var style = cell.GetStyle();
+                        var value = cell.StringValue;
+
+                        if (string.IsNullOrWhiteSpace(value))
+                            break;
+
+                        if (style.Font.IsBold)
+                        {
+                            if (lastWasBold && _categoriesList.Count > 0)
+                            {
+                                // Удаляем предыдущую категорию, если была две жирные строки подряд
+                                _categoriesList.RemoveAt(_categoriesList.Count - 1);
+                            }
+
+                            var category = new Category()
+                            {
+                                CategoryId = random.Next(1, 1000),
+                                Name = value,
+                                GroupNavigation = group,
+                                Group = group.GroupIdNumber
+                            };
+                            _categoriesList.Add(category);
+                            lastCategory = category;
+                            lastWasBold = true;
+                            break;
+                        }
+                        else if (lastCategory != null)
+                        {
+                            var material = new Materials()
+                            {
+                                IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue,
+                                Name = cell.StringValue,
+                                Measurement = worksheet.Cells[i, j + 1].StringValue,
+                                Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
+                                Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
+                                GroupNavigation = group,
+                                Group = group.GroupIdNumber,
+                                CategoryNavigation = lastCategory,
+                                Category = lastCategory.CategoryId
+                            };
+                            _materialsList.Add(material);
+                            lastWasBold = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            CountItemsMaterials = MaterialsList.Count();
+            CountItemsFileMaterials = MaterialsList.Count();
+            MainWindowViewModel.AllMaterials = MaterialsList;
         }
 
         public async Task OpenFileAsync()
@@ -390,6 +477,7 @@ namespace BK_Details_App.ViewModels
                 NameFile = FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
                 if (FilePath.EndsWith(".csv")) LoadCsv(FilePath);
                 else LoadExcel(FilePath);
+                FiltersPEZs();
             }
             catch (Exception ex)
             {
@@ -858,57 +946,160 @@ namespace BK_Details_App.ViewModels
             {
                 ShowError("Ошибка!", ex.ToString());
             }
-        }       
+        }
+
+        //public void AddMaterial(Materials material)
+        //{
+        //    string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+        //    XLWorkbook wb = new XLWorkbook(filePath);
+
+        //    foreach (var ws in wb.Worksheets)
+        //    {
+        //        foreach (var cell in ws.CellsUsed(c => c.HasFormula))
+        //        {
+        //            if (string.IsNullOrWhiteSpace(cell.FormulaA1))
+        //                cell.Clear(); // Или cell.Value = null;
+        //        }
+        //    }
+
+        //    var currentWorksheet = wb.Worksheet(material.GroupNavigation.Name);
+
+        //    int neededRow = -1;
+        //    int lastRow = currentWorksheet.LastRowUsed()?.RowNumber() ?? 0;
+        //    for (int i = 1; i <= lastRow; i++)
+        //    {
+        //        //if (material.CategoryNavigation is null) neededRow = lastRow;
+        //        if (currentWorksheet.Cell(i, 2).GetString() == material.CategoryNavigation.Name)
+        //        {
+        //            neededRow = i + MaterialsList.Count(x => x.CategoryNavigation.Name == material.CategoryNavigation.Name) + 1;
+        //            currentWorksheet.Row(neededRow).InsertRowsAbove(1);
+        //        }
+
+        //        if (i == neededRow)
+        //        {
+        //            currentWorksheet.Cell(i, 1).Value = MaterialsList.Where(x => x.GroupNavigation.Name == material.GroupNavigation.Name).Max(x => x.IdNumber) + 1;
+        //            currentWorksheet.Cell(i, 2).Value = material.Name;
+        //            currentWorksheet.Cell(i, 3).Value = material.Measurement;
+        //            currentWorksheet.Cell(i, 4).Value = material.Analogs;
+        //            currentWorksheet.Cell(i, 5).Value = material.Note;
+        //            break;
+        //        }
+        //    }
+
+        //    wb.SaveAs(filePath);
+        //}
+
+        /* public void AddMaterial(Materials material)
+         {
+             string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+             XLWorkbook wb = new XLWorkbook(filePath);
+             var ws = wb.Worksheet(material.GroupNavigation.Name);
+
+             int lastRow = ws.LastRowUsed()?.RowNumber() ?? 1;
+             int categoryRow = -1;
+
+             for (int i = 1; i <= lastRow; i++)
+             {
+                 var cell = ws.Cell(i, 2);
+                 var fontBold = cell.Style.Font.Bold;
+                 if (fontBold && cell.GetString().Trim() == material.CategoryNavigation.Name.Trim())
+                 {
+                     categoryRow = i;
+                     break;
+                 }
+             }
+
+             if (categoryRow == -1)
+             {
+                 throw new Exception($"Категория '{material.CategoryNavigation.Name}' не найдена в группе '{material.GroupNavigation.Name}'");
+             }
+
+             int insertRow = categoryRow + 1;
+
+             // Вставляем новую строку
+             ws.Row(insertRow).InsertRowsAbove(1);
+
+             int newId = MaterialsList
+                 .Where(x => x.GroupNavigation.Name == material.GroupNavigation.Name)
+                 .DefaultIfEmpty()
+                 .Max(x => x?.IdNumber ?? 0) + 1;
+
+             ws.Cell(insertRow, 1).Value = newId;
+             ws.Cell(insertRow, 2).Value = material.Name;
+             ws.Cell(insertRow, 3).Value = material.Measurement;
+             ws.Cell(insertRow, 4).Value = material.Analogs;
+             ws.Cell(insertRow, 5).Value = material.Note;
+
+             wb.SaveAs(filePath);
+         }*/
 
         public void AddMaterial(Materials material)
         {
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
+            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
             XLWorkbook wb = new XLWorkbook(filePath);
+            var ws = wb.Worksheet(material.GroupNavigation.Name);
 
-            foreach (var ws in wb.Worksheets)
+            // Найти последнюю строку нужной категории
+            int lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+            int insertAtRow = -1;
+            bool inCategory = false;
+
+            for (int i = 1; i <= lastRow; i++)
             {
-                foreach (var cell in ws.CellsUsed(c => c.HasFormula))
+                var cell = ws.Cell(i, 2);
+                var fontBold = cell.Style.Font.Bold;
+
+                if (fontBold && cell.GetString() == material.CategoryNavigation.Name)
                 {
-                    if (string.IsNullOrWhiteSpace(cell.FormulaA1))
-                        cell.Clear(); // Или cell.Value = null;
+                    inCategory = true;
+                    continue;
+                }
+
+                if (inCategory)
+                {
+                    var nextCell = ws.Cell(i, 2);
+                    if (nextCell.Style.Font.Bold)
+                    {
+                        // Встретили следующую категорию – вставлять перед ней
+                        insertAtRow = i;
+                        break;
+                    }
+
+                    if (i == lastRow)
+                    {
+                        insertAtRow = lastRow + 1;
+                        break;
+                    }
                 }
             }
 
-            var currentWorksheet = wb.Worksheet(SelectedGroup.Name);
-
-            int neededRow = -1;
-            int lastRow = currentWorksheet.LastRowUsed()?.RowNumber() ?? 0;
-            for (int i = 1; i < lastRow; i++)
+            if (insertAtRow == -1)
             {
-                if (currentWorksheet.Cell(i, 2).GetString() == SelectedCategory.Name)
-                {
-                    neededRow = i + MaterialsList.Count(x => x.CategoryNavigation.Name == SelectedCategory.Name) + 1;
-                    currentWorksheet.Row(neededRow).InsertRowsAbove(1);
-                }
-
-                if (i == neededRow)
-                {
-                    currentWorksheet.Cell(i, 1).Value = MaterialsList.Where(x => x.GroupNavigation.Name == SelectedGroup.Name).Max(x => x.IdNumber) + 1;
-                    currentWorksheet.Cell(i, 2).Value = material.Name;
-                    currentWorksheet.Cell(i, 3).Value = material.Measurement;
-                    currentWorksheet.Cell(i, 4).Value = material.Analogs;
-                    currentWorksheet.Cell(i, 5).Value = material.Note;
-                    break;
-                }
+                // Если категорию не нашли – просто добавляем в конец
+                insertAtRow = lastRow + 1;
             }
-            
+
+            ws.Row(insertAtRow).InsertRowsAbove(1);
+            var row = ws.Row(insertAtRow);
+
+            row.Cell(1).Value = MaterialsList.Where(x => x.GroupNavigation.Name == material.GroupNavigation.Name).Max(x => x.IdNumber) + 1;
+            row.Cell(2).Value = material.Name;
+            row.Cell(3).Value = material.Measurement;
+            row.Cell(4).Value = material.Analogs;
+            row.Cell(5).Value = material.Note;
+
             wb.SaveAs(filePath);
         }
 
-        public void ShowAddMaterials()
+        public void ShowAddMaterials(Materials? material)
         {
             try
             {
                 int id = 0;
 
                 if (_addWindow != null) return;
-
-                var viewModel = new AddEditVM();
+                var viewModel = new AddEditVM(SelectedCategory, SelectedGroup);
+                if (material != null) viewModel = new AddEditVM(SelectedCategory, SelectedGroup, material);
 
                 _addWindow = new Window
                 {
@@ -940,5 +1131,7 @@ namespace BK_Details_App.ViewModels
                 ShowError("ShowAdd: Ошибка!", ex.ToString());
             }
         }
+
+        
     }
 }

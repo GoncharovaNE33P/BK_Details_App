@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BK_Details_App.Models
 {
-    internal class PEZ
+    public partial class PEZ
     {
         public int IdNumber { get; set; }
         public string Mark { get; set; }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BK_Details_App.Models
 {
-    internal class Groups
+    public partial class Groups
     {
         public int GroupIdNumber { get; set; }
         public string Name { get; set; }

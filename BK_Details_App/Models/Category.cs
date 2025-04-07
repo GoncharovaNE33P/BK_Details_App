@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BK_Details_App.Models
 {
-    internal class Category
+    public partial class Category
     {
         public int CategoryId { get; set; }
         public string Name { get; set; }
