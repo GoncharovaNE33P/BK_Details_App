@@ -25,7 +25,7 @@ namespace BK_Details_App.ViewModels
         List<Materials> _filteredFavs = new();
         public List<Materials> FilteredFavs { get => _filteredFavs; set => this.RaiseAndSetIfChanged(ref _filteredFavs, value); }
 
-        string _searchFavs;
+        string _searchFavs = "";
         public string SearchFavs { get { return _searchFavs; } set { _searchFavs = value; FilterFavs(); } }
 
         bool _isAscFavs = false;
