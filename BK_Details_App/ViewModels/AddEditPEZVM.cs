@@ -204,7 +204,7 @@ namespace BK_Details_App.ViewModels
             }
         }
 
-        public async void ProcessExcel(string filePath)
+        public void ProcessExcel(string filePath)
         {
             try
             {
