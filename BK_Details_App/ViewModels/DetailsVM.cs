@@ -109,7 +109,7 @@ namespace BK_Details_App.ViewModels
                 NameFile = "Тестовое ПЭ3";
                 ReadFromExcelFile();
                 SelectedGroup = _groupsList[0];
-                SelectedCategory = _categoriesList.Where(x => x.GroupNavigation == SelectedGroup).FirstOrDefault();
+                SelectedCategory = _categoriesList.FirstOrDefault(x => x.GroupNavigation == SelectedGroup);
                 FilterMaterials();
                 Favs = ReadFavorites();
                 if (MainWindowViewModel.BaseListPEZs.Count > 0) CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
