@@ -33,11 +33,8 @@ namespace BK_Details_App.ViewModels
         #region Properties
 
         List<Materials> _materialsList = new();
-        public List<Materials> MaterialsList
-        {
-            get => _materialsList;
-            set => this.RaiseAndSetIfChanged(ref _materialsList, value);
-        }
+        public List<Materials> MaterialsList { get => _materialsList; set => this.RaiseAndSetIfChanged(ref _materialsList, value); }
+
         List<Materials> _filteredMaterials = new();
         public List<Materials> FilteredMaterials { get => _filteredMaterials; set => this.RaiseAndSetIfChanged(ref _filteredMaterials, value); }
 
@@ -53,7 +50,7 @@ namespace BK_Details_App.ViewModels
         Category _selectedCategory = new();
         public Category SelectedCategory { get => _selectedCategory; set { this.RaiseAndSetIfChanged(ref _selectedCategory, value); FilterMaterials(); } }
 
-        string _searchMaterials;
+        string _searchMaterials = "";
         public string SearchMaterials { get { return _searchMaterials; } set { _searchMaterials = value; FilterMaterials(); } }
 
         bool _isAscending = false;
@@ -68,13 +65,13 @@ namespace BK_Details_App.ViewModels
         List<PEZ> _listPEZs = new();
         public List<PEZ> ListPEZs { get => _listPEZs; set => this.RaiseAndSetIfChanged(ref _listPEZs, value); }
 
-        private string _filePath;
+        private string _filePath = "";
         public string FilePath { get => _filePath; set => this.RaiseAndSetIfChanged(ref _filePath, value); }
 
-        private string _nameFile;
+        private string _nameFile = "";
         public string NameFile { get => _nameFile; set => this.RaiseAndSetIfChanged(ref _nameFile, value); }
 
-        string _searchPEZs;
+        string _searchPEZs = "";
         public string SearchPEZs { get { return _searchPEZs; } set { _searchPEZs = value; FiltersPEZs(); } }
 
         bool _isAscendingPEZs = false;
@@ -131,11 +128,6 @@ namespace BK_Details_App.ViewModels
                     ShowError("DetailsVM: Ошибка!", ex.ToString());
                 }
             }
-        }
-
-        public DetailsVM(int a)
-        {
-            if (MaterialsList.Count > 0 || CollectionPEZs.Count > 0) MatchPEZMaterials();
         }
 
         #region Методы для вывода оконных сообщений
