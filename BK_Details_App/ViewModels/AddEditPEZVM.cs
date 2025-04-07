@@ -21,7 +21,7 @@ namespace BK_Details_App.ViewModels
 {
     internal class AddEditPEZVM : ViewModelBase
     {
-        #region properties
+        #region Properties
 
         private string _headPage = "";
         public string HeadPage { get => _headPage; set => this.RaiseAndSetIfChanged(ref _headPage, value); }
@@ -45,36 +45,53 @@ namespace BK_Details_App.ViewModels
 
         #endregion
 
+        #region Конструкторы
+
         public AddEditPEZVM()
         {
-            _headPage = "Добавление ПЭЗ";
-            _buttonName = "Добавить ПЭЗ";
+            try
+            {
+                _headPage = "Добавление ПЭЗ";
+                _buttonName = "Добавить ПЭЗ";
 
-            _newPEZ = new PEZ();            
+                _newPEZ = new PEZ();
 
-            ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
-            
+                ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
+            }
+            catch (Exception ex)
+            {
+                DetailsVMObject.ShowError("AddEditPEZVM1: Ошибка!", ex.ToString());
+            }
         }
 
         public AddEditPEZVM(int id, string filePath)
         {
-            if (id == 0)
+            try
             {
-                _headPage = "Добавление ПЭЗ";
-                _buttonName = "Добавить ПЭЗ";
+                if (id == 0)
+                {
+                    _headPage = "Добавление ПЭЗ";
+                    _buttonName = "Добавить ПЭЗ";
+                }
+                else
+                {
+                    _headPage = "Редактирование ПЭЗ";
+                    _buttonName = "Сохранить изменения ПЭЗ";
+                }
+
+                FilePath = filePath;
+
+                LoadData(id);
+
+                ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
             }
-            else
+            catch (Exception ex)
             {
-                _headPage = "Редактирование ПЭЗ";
-                _buttonName = "Сохранить изменения ПЭЗ";                
+                DetailsVMObject.ShowError("AddEditPEZVM2: Ошибка!", ex.ToString());
             }
-
-            FilePath = filePath;
-            
-            LoadData(id);
-
-            ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
         }
+
+        #endregion
 
         private void LoadData(int id)
         {
@@ -123,6 +140,8 @@ namespace BK_Details_App.ViewModels
             }
         }
 
+        #region Сохранить изменения в файле
+
         public void ProcessCsv(string filePath)
         {
             try
@@ -155,7 +174,7 @@ namespace BK_Details_App.ViewModels
                     List<PEZ> pezList = MainWindowViewModel.BaseListPEZs;
 
                     int index = pezList.FindIndex(p => p.IdNumber == NewPEZ.IdNumber);
-                    if (index != -1)  pezList[index] = NewPEZ; 
+                    if (index != -1) pezList[index] = NewPEZ;
 
                     MainWindowViewModel.BaseListPEZs = pezList;
 
@@ -275,5 +294,7 @@ namespace BK_Details_App.ViewModels
                 DetailsVMObject.ShowError("ProcessExcel: Ошибка!", ex.ToString());
             }
         }
+
+        #endregion
     }
 }

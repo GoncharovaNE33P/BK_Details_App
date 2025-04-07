@@ -24,12 +24,13 @@ using FuzzySharp.SimilarityRatio;
 using ClosedXML.Excel;
 using Avalonia.Media;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 namespace BK_Details_App.ViewModels
 {
     internal class DetailsVM : ViewModelBase
     {
-        #region properties
+        #region Properties
 
         List<Materials> _materialsList = new();
         public List<Materials> MaterialsList
@@ -40,10 +41,10 @@ namespace BK_Details_App.ViewModels
         List<Materials> _filteredMaterials = new();
         public List<Materials> FilteredMaterials { get => _filteredMaterials; set => this.RaiseAndSetIfChanged(ref _filteredMaterials, value); }
 
-        List<BK_Details_App.Models.Groups> _groupsList = new();
-        public List<BK_Details_App.Models.Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
-        BK_Details_App.Models.Groups _selectedGroup = new();
-        public BK_Details_App.Models.Groups SelectedGroup { get => _selectedGroup; set { this.RaiseAndSetIfChanged(ref _selectedGroup, value); FilterMaterials(); FilterCategories(); } }
+        List<Models.Groups> _groupsList = new();
+        public List<Models.Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
+        Models.Groups _selectedGroup = new();
+        public Models.Groups SelectedGroup { get => _selectedGroup; set { this.RaiseAndSetIfChanged(ref _selectedGroup, value); FilterMaterials(); FilterCategories(); } }
 
         List<Category> _categoriesList = new();
         public List<Category> CategoriesList { get => _categoriesList; set => this.RaiseAndSetIfChanged(ref _categoriesList, value); }
@@ -97,6 +98,11 @@ namespace BK_Details_App.ViewModels
         private Window? _addPEZWindow;
         private Window? _addWindow;
 
+        private void PreventClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+        }
+
         #endregion
 
         public DetailsVM()
@@ -122,41 +128,61 @@ namespace BK_Details_App.ViewModels
             {
                 if (!Design.IsDesignMode)
                 {
-                    MessageBoxManager.GetMessageBoxStandard("DetailsVM: Ошибка", ex.Message + "\n" + ex.StackTrace, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                    ShowError("DetailsVM: Ошибка!", ex.ToString());
                 }
             }
+        }
+
+        public DetailsVM(int a)
+        {
+            if (MaterialsList.Count > 0 || CollectionPEZs.Count > 0) MatchPEZMaterials();
         }
 
         #region Методы для вывода оконных сообщений
         public void ShowError(string title, string message)
         {
-            MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+            try
             {
-                ContentTitle = title,
-                ContentMessage = message,
-                Icon = MsBox.Avalonia.Enums.Icon.Error,
-                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
+                MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+                {
+                    ContentTitle = title,
+                    ContentMessage = message,
+                    Icon = MsBox.Avalonia.Enums.Icon.Error,
+                    WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
 
-            }).ShowAsync();
+                }).ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                ShowError("ShowError: Ошибка!", ex.ToString());
+            }
         }
 
         public void ShowSuccess(string title, string message)
         {
-            MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+            try
             {
-                ContentTitle = title,
-                ContentMessage = message,
-                Icon = MsBox.Avalonia.Enums.Icon.Success,
-                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
+                MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+                {
+                    ContentTitle = title,
+                    ContentMessage = message,
+                    Icon = MsBox.Avalonia.Enums.Icon.Success,
+                    WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
 
-            }).ShowAsync();
+                }).ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                ShowError("ShowSuccess: Ошибка!", ex.ToString());
+            }
         }
 
         #endregion
 
-        #region filters
+        #region Методы поиска, сортировки и фильтрации
+
         void FilterMaterials()
         {
             try
@@ -195,7 +221,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxManager.GetMessageBoxStandard("FilterMaterials: Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                ShowError("FilterMaterials: Ошибка!", ex.ToString());
             }
         }
 
@@ -216,7 +242,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxManager.GetMessageBoxStandard("FilterCategories: Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                ShowError("FilterCategories: Ошибка!", ex.ToString());
             }
         }
 
@@ -279,181 +305,102 @@ namespace BK_Details_App.ViewModels
                 ShowError("FilterPEZs: Ошибка!", ex.ToString());
             }
         }
+
         #endregion
 
-        #region Методы считывания данных из Excel
-
-        /*public void ReadFromExcelFile()
-        {
-            // Загрузить файл Excel
-            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin")-1), "Materials", "materials.xlsx");
-            //string f = "C:\\Users\\user\\source\\repos\\BK_Details_App\\BK_Details_App\\Materials\\materials.xlsx";
-            //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "materials.xlsx");
-            Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
-
-            // Получить все рабочие листы
-            WorksheetCollection collection = wb.Worksheets;
-            Random random = new Random();
-            // Перебрать все рабочие листы
-            for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
-            {
-                // Получить рабочий лист, используя его индекс
-                Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
-
-                BK_Details_App.Models.Groups groups = new BK_Details_App.Models.Groups()
-                {
-                    GroupIdNumber = random.Next(1, 1000),
-                    Name = worksheet.Name
-                };
-                _groupsList.Add(groups);
-
-                // Получить количество строк и столбцов
-                int rows = worksheet.Cells.MaxDataRow;
-                int cols = worksheet.Cells.MaxDataColumn;
-                int lastColoredRow = -1; // Запоминаем индекс последней добавленной ячейки с жирным шрифтом
-
-                // Цикл по строкам
-                for (int i = 1; i < rows; i++)
-                {
-                    // Перебрать каждый столбец в выбранной строке
-                    for (int j = 1; j < cols; j++) //начинаем со столбца с наименованием
-                    {
-                        Aspose.Cells.Cell cell = worksheet.Cells[i, j];
-                        Aspose.Cells.Style style = cell.GetStyle();
-
-                        if (cell.StringValue == "") break;
-
-                        if (style.Font.IsBold is true)
-                        {
-                            // Если предыдущая ячейка в той же колонке тоже была с жирным шрифтом, удаляем её
-                            if (lastColoredRow == cell.Row - 1)
-                            {
-                                _categoriesList.RemoveAt(_categoriesList.Count - 1);
-                            }
-
-                            Category category = new Category()
-                            {
-                                CategoryId = random.Next(1, 1000),
-                                Name = cell.StringValue,
-                                GroupNavigation = _groupsList[_groupsList.Count - 1],
-                                Group = _groupsList[_groupsList.Count - 1].GroupIdNumber
-                            };
-                            _categoriesList.Add(category);
-
-                            lastColoredRow = cell.Row; // Запоминаем текущую строку
-                            break;
-                        }
-                        else
-                        {
-                            Materials materials = new Materials()
-                            {
-                                IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue, //в предыдущей ячейке содержится номер
-                                Name = cell.StringValue,
-                                Measurement = worksheet.Cells[i, j + 1].StringValue,
-                                Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
-                                Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
-                                GroupNavigation = _groupsList[_groupsList.Count - 1],
-                                Group = _groupsList[_groupsList.Count - 1].GroupIdNumber,
-                                CategoryNavigation = _categoriesList[_categoriesList.Count - 1],
-                                Category = _categoriesList[_categoriesList.Count - 1].CategoryId
-                            };
-                            _materialsList.Add(materials);
-                            break;
-                        }
-                    }
-                    // переходим на следующую строку
-                }
-                // переходим на следующий лист
-            }
-
-            CountItemsMaterials = MaterialsList.Count();
-            CountItemsFileMaterials = MaterialsList.Count();
-            MainWindowViewModel.AllMaterials = MaterialsList;
-        }*/
+        #region Методы импорта и экспорта данных Excel
 
         public void ReadFromExcelFile()
         {
-            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
-            Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
-            WorksheetCollection collection = wb.Worksheets;
-            Random random = new Random();
-
-            _groupsList.Clear();
-            _categoriesList.Clear();
-            _materialsList.Clear();
-
-            for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
+            try
             {
-                Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
+                string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+                Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
+                WorksheetCollection collection = wb.Worksheets;
+                Random random = new Random();
 
-                var group = new BK_Details_App.Models.Groups()
+                _groupsList.Clear();
+                _categoriesList.Clear();
+                _materialsList.Clear();
+
+                for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
                 {
-                    GroupIdNumber = random.Next(1, 1000),
-                    Name = worksheet.Name
-                };
-                _groupsList.Add(group);
+                    Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
 
-                Category? lastCategory = null;
-                bool lastWasBold = false;
-                int rows = worksheet.Cells.MaxDataRow;
-                int cols = worksheet.Cells.MaxDataColumn;
-
-                for (int i = 1; i <= rows; i++)
-                {
-                    for (int j = 1; j <= cols; j++)
+                    var group = new BK_Details_App.Models.Groups()
                     {
-                        var cell = worksheet.Cells[i, j];
-                        var style = cell.GetStyle();
-                        var value = cell.StringValue;
+                        GroupIdNumber = random.Next(1, 1000),
+                        Name = worksheet.Name
+                    };
+                    _groupsList.Add(group);
 
-                        if (string.IsNullOrWhiteSpace(value))
-                            break;
+                    Category? lastCategory = null;
+                    bool lastWasBold = false;
+                    int rows = worksheet.Cells.MaxDataRow;
+                    int cols = worksheet.Cells.MaxDataColumn;
 
-                        if (style.Font.IsBold)
+                    for (int i = 1; i <= rows; i++)
+                    {
+                        for (int j = 1; j <= cols; j++)
                         {
-                            if (lastWasBold && _categoriesList.Count > 0)
+                            var cell = worksheet.Cells[i, j];
+                            var style = cell.GetStyle();
+                            var value = cell.StringValue;
+
+                            if (string.IsNullOrWhiteSpace(value))
+                                break;
+
+                            if (style.Font.IsBold)
                             {
-                                // Удаляем предыдущую категорию, если была две жирные строки подряд
-                                _categoriesList.RemoveAt(_categoriesList.Count - 1);
+                                if (lastWasBold && _categoriesList.Count > 0)
+                                {
+                                    // Удаляем предыдущую категорию, если была две жирные строки подряд
+                                    _categoriesList.RemoveAt(_categoriesList.Count - 1);
+                                }
+
+                                var category = new Category()
+                                {
+                                    CategoryId = random.Next(1, 1000),
+                                    Name = value,
+                                    GroupNavigation = group,
+                                    Group = group.GroupIdNumber
+                                };
+                                _categoriesList.Add(category);
+                                lastCategory = category;
+                                lastWasBold = true;
+                                break;
                             }
-
-                            var category = new Category()
+                            else if (lastCategory != null)
                             {
-                                CategoryId = random.Next(1, 1000),
-                                Name = value,
-                                GroupNavigation = group,
-                                Group = group.GroupIdNumber
-                            };
-                            _categoriesList.Add(category);
-                            lastCategory = category;
-                            lastWasBold = true;
-                            break;
-                        }
-                        else if (lastCategory != null)
-                        {
-                            var material = new Materials()
-                            {
-                                IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue,
-                                Name = cell.StringValue,
-                                Measurement = worksheet.Cells[i, j + 1].StringValue,
-                                Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
-                                Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
-                                GroupNavigation = group,
-                                Group = group.GroupIdNumber,
-                                CategoryNavigation = lastCategory,
-                                Category = lastCategory.CategoryId
-                            };
-                            _materialsList.Add(material);
-                            lastWasBold = false;
-                            break;
+                                var material = new Materials()
+                                {
+                                    IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue,
+                                    Name = cell.StringValue,
+                                    Measurement = worksheet.Cells[i, j + 1].StringValue,
+                                    Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
+                                    Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
+                                    GroupNavigation = group,
+                                    Group = group.GroupIdNumber,
+                                    CategoryNavigation = lastCategory,
+                                    Category = lastCategory.CategoryId
+                                };
+                                _materialsList.Add(material);
+                                lastWasBold = false;
+                                break;
+                            }
                         }
                     }
                 }
+
+                CountItemsMaterials = MaterialsList.Count();
+                CountItemsFileMaterials = MaterialsList.Count();
+                MainWindowViewModel.AllMaterials = MaterialsList;
             }
 
-            CountItemsMaterials = MaterialsList.Count();
-            CountItemsFileMaterials = MaterialsList.Count();
-            MainWindowViewModel.AllMaterials = MaterialsList;
+            catch (Exception ex)
+            {
+                ShowError("ReadFromExcelFile: Ошибка!", ex.ToString());
+            }
         }
 
         public async Task OpenFileAsync()
@@ -627,7 +574,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError("Ошибка!", ex.ToString());
+                ShowError("ExportToExcel: Ошибка!", ex.ToString());
             }
         }
 
@@ -637,70 +584,85 @@ namespace BK_Details_App.ViewModels
 
         public List<string> ReadFavorites()
         {
-            List<string> values = new List<string>();
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
-
-            if (!File.Exists(filePath))
-                //throw new FileNotFoundException("Файл не найден в ReadFavorites", filePath);
-                return values;
-            else
+            try
             {
-                Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook(filePath);
-                Aspose.Cells.Worksheet sheet = workbook.Worksheets["Избранное"];
+                List<string> values = new List<string>();
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
-                if (sheet == null)
-                    throw new ArgumentException("Лист не найден");
-
-                int rowCount = sheet.Cells.MaxDataRow;
-
-                for (int i = 0; i <= rowCount; i++)
+                if (!File.Exists(filePath))
+                    //throw new FileNotFoundException("Файл не найден в ReadFavorites", filePath);
+                    return values;
+                else
                 {
-                    string cellValue = sheet.Cells[i, 0].StringValue; // Читаем первую колонку
-                    if (!string.IsNullOrEmpty(cellValue))
-                        values.Add(cellValue);
-                }
+                    Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook(filePath);
+                    Aspose.Cells.Worksheet sheet = workbook.Worksheets["Избранное"];
 
-                return values;
+                    if (sheet == null)
+                        throw new ArgumentException("Лист не найден");
+
+                    int rowCount = sheet.Cells.MaxDataRow;
+
+                    for (int i = 0; i <= rowCount; i++)
+                    {
+                        string cellValue = sheet.Cells[i, 0].StringValue; // Читаем первую колонку
+                        if (!string.IsNullOrEmpty(cellValue))
+                            values.Add(cellValue);
+                    }
+
+                    return values;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError("ReadFavorites: Ошибка!", ex.ToString());
+                return new List<string>();
             }
         }
 
-        public async Task AddToFavorite(string _material)
+        public void AddToFavorite(string _material)
         {
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+            try
+            {
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
-            if (Favs.Any(x => x == _material))
-            {
-                MessageBoxManager.GetMessageBoxStandard("Внимание", _material + " уже в избранном", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
-                return;
-            }
-            else
-            {
-                XLWorkbook workbook;
-                if (File.Exists(filePath))
+                if (Favs.Any(x => x == _material))
                 {
-                    workbook = new XLWorkbook(filePath);
+                    ShowError("Внимание!", _material + " уже в избранном");
+                    return;
                 }
                 else
                 {
-                    workbook = new XLWorkbook();
+                    XLWorkbook workbook;
+                    if (File.Exists(filePath))
+                    {
+                        workbook = new XLWorkbook(filePath);
+                    }
+                    else
+                    {
+                        workbook = new XLWorkbook();
+                    }
+
+                    string sheetName = "Избранное";
+                    var sheet = workbook.Worksheets.Contains(sheetName)
+                    ? workbook.Worksheet(sheetName)
+                    : workbook.AddWorksheet(sheetName);
+
+                    //Определяем первую пустую строку
+                    int lastRow = sheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
+                    sheet.Cell(lastRow, 1).Value = _material;
+
+                    //Сохраняем файл
+                    workbook.SaveAs(filePath);
                 }
 
-                string sheetName = "Избранное";
-                var sheet = workbook.Worksheets.Contains(sheetName)
-                ? workbook.Worksheet(sheetName)
-                : workbook.AddWorksheet(sheetName);
-
-                //Определяем первую пустую строку
-                int lastRow = sheet.LastRowUsed()?.RowNumber() + 1 ?? 1;
-                sheet.Cell(lastRow, 1).Value = _material;
-                
-                //Сохраняем файл
-                workbook.SaveAs(filePath);
+                //ReadFavorites();
+                Favs = ReadFavorites();
+                ShowSuccess("Успех", $"{_material} добавлен в избранное");
             }
-
-            //ReadFavorites();
-            Favs = ReadFavorites();
-            ShowSuccess("Успех", $"{_material} добавлен в избранное");
+            catch (Exception ex)
+            {
+                ShowError("AddToFavorite: Ошибка!", ex.ToString());
+            }
         }
 
         public void ToFavouritesView()
@@ -710,7 +672,7 @@ namespace BK_Details_App.ViewModels
 
         #endregion
 
-        #region Методы открытия окна добавления/редактирования ПЭЗ и метод удаления ПЭЗ
+        #region Методы работы с ПЭЗ
 
         public void ShowAddPEZ()
         {
@@ -803,11 +765,6 @@ namespace BK_Details_App.ViewModels
             }
         }
 
-        private void PreventClosing(object? sender, System.ComponentModel.CancelEventArgs e)
-        {
-            e.Cancel = true;
-        }
-
         public async void DeletePEZ(int id)
         {
             try
@@ -870,44 +827,56 @@ namespace BK_Details_App.ViewModels
 
         private async Task SaveToCsvAsync(string filePath)
         {
-            var lines = new List<string>
+            try 
             {
-                "#;Метка;Имя;Количество"
-            };
+                List<string>? lines = new List<string>
+                {
+                    "#;Метка;Имя;Количество"
+                };
 
-            foreach (PEZ? pez in MainWindowViewModel.BaseListPEZs)
-            {
-                lines.Add($"{pez.IdNumber};{pez.Mark};{pez.Name};{pez.Quantity}");
+                foreach (PEZ? pez in MainWindowViewModel.BaseListPEZs)
+                {
+                    lines.Add($"{pez.IdNumber};{pez.Mark};{pez.Name};{pez.Quantity}");
+                }
+
+                await File.WriteAllLinesAsync(filePath, lines, Encoding.GetEncoding("Windows-1251"));
             }
-
-            await File.WriteAllLinesAsync(filePath, lines, Encoding.GetEncoding("Windows-1251"));
+            catch (Exception ex)
+            {
+                ShowError("SaveToCsvAsync: Ошибка!", ex.ToString());
+            }
         }
 
         private void SaveToExcel(string filePath)
         {
-            using XLWorkbook workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add(NameFile);
-
-            // Заголовки
-            worksheet.Cell(1, 1).Value = "#";
-            worksheet.Cell(1, 2).Value = "Метка";
-            worksheet.Cell(1, 3).Value = "Имя";
-            worksheet.Cell(1, 4).Value = "Количество";
-
-            int row = 2;
-            foreach (PEZ? pez in MainWindowViewModel.BaseListPEZs)
+            try
             {
-                worksheet.Cell(row, 1).Value = pez.IdNumber;
-                worksheet.Cell(row, 2).Value = pez.Mark;
-                worksheet.Cell(row, 3).Value = pez.Name;
-                worksheet.Cell(row, 4).Value = pez.Quantity;
-                row++;
+                using XLWorkbook workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add(NameFile);
+
+                // Заголовки
+                worksheet.Cell(1, 1).Value = "#";
+                worksheet.Cell(1, 2).Value = "Метка";
+                worksheet.Cell(1, 3).Value = "Имя";
+                worksheet.Cell(1, 4).Value = "Количество";
+
+                int row = 2;
+                foreach (PEZ? pez in MainWindowViewModel.BaseListPEZs)
+                {
+                    worksheet.Cell(row, 1).Value = pez.IdNumber;
+                    worksheet.Cell(row, 2).Value = pez.Mark;
+                    worksheet.Cell(row, 3).Value = pez.Name;
+                    worksheet.Cell(row, 4).Value = pez.Quantity;
+                    row++;
+                }
+
+                workbook.SaveAs(filePath);
             }
-
-            workbook.SaveAs(filePath);
+            catch (Exception ex)
+            {
+                ShowError("SaveToExcel: Ошибка!", ex.ToString());
+            }
         }
-
-        #endregion
 
         public void MatchPEZMaterials()
         {
@@ -948,90 +917,9 @@ namespace BK_Details_App.ViewModels
             }
         }
 
-        //public void AddMaterial(Materials material)
-        //{
-        //    string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
-        //    XLWorkbook wb = new XLWorkbook(filePath);
+        #endregion        
 
-        //    foreach (var ws in wb.Worksheets)
-        //    {
-        //        foreach (var cell in ws.CellsUsed(c => c.HasFormula))
-        //        {
-        //            if (string.IsNullOrWhiteSpace(cell.FormulaA1))
-        //                cell.Clear(); // Или cell.Value = null;
-        //        }
-        //    }
-
-        //    var currentWorksheet = wb.Worksheet(material.GroupNavigation.Name);
-
-        //    int neededRow = -1;
-        //    int lastRow = currentWorksheet.LastRowUsed()?.RowNumber() ?? 0;
-        //    for (int i = 1; i <= lastRow; i++)
-        //    {
-        //        //if (material.CategoryNavigation is null) neededRow = lastRow;
-        //        if (currentWorksheet.Cell(i, 2).GetString() == material.CategoryNavigation.Name)
-        //        {
-        //            neededRow = i + MaterialsList.Count(x => x.CategoryNavigation.Name == material.CategoryNavigation.Name) + 1;
-        //            currentWorksheet.Row(neededRow).InsertRowsAbove(1);
-        //        }
-
-        //        if (i == neededRow)
-        //        {
-        //            currentWorksheet.Cell(i, 1).Value = MaterialsList.Where(x => x.GroupNavigation.Name == material.GroupNavigation.Name).Max(x => x.IdNumber) + 1;
-        //            currentWorksheet.Cell(i, 2).Value = material.Name;
-        //            currentWorksheet.Cell(i, 3).Value = material.Measurement;
-        //            currentWorksheet.Cell(i, 4).Value = material.Analogs;
-        //            currentWorksheet.Cell(i, 5).Value = material.Note;
-        //            break;
-        //        }
-        //    }
-
-        //    wb.SaveAs(filePath);
-        //}
-
-        /* public void AddMaterial(Materials material)
-         {
-             string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
-             XLWorkbook wb = new XLWorkbook(filePath);
-             var ws = wb.Worksheet(material.GroupNavigation.Name);
-
-             int lastRow = ws.LastRowUsed()?.RowNumber() ?? 1;
-             int categoryRow = -1;
-
-             for (int i = 1; i <= lastRow; i++)
-             {
-                 var cell = ws.Cell(i, 2);
-                 var fontBold = cell.Style.Font.Bold;
-                 if (fontBold && cell.GetString().Trim() == material.CategoryNavigation.Name.Trim())
-                 {
-                     categoryRow = i;
-                     break;
-                 }
-             }
-
-             if (categoryRow == -1)
-             {
-                 throw new Exception($"Категория '{material.CategoryNavigation.Name}' не найдена в группе '{material.GroupNavigation.Name}'");
-             }
-
-             int insertRow = categoryRow + 1;
-
-             // Вставляем новую строку
-             ws.Row(insertRow).InsertRowsAbove(1);
-
-             int newId = MaterialsList
-                 .Where(x => x.GroupNavigation.Name == material.GroupNavigation.Name)
-                 .DefaultIfEmpty()
-                 .Max(x => x?.IdNumber ?? 0) + 1;
-
-             ws.Cell(insertRow, 1).Value = newId;
-             ws.Cell(insertRow, 2).Value = material.Name;
-             ws.Cell(insertRow, 3).Value = material.Measurement;
-             ws.Cell(insertRow, 4).Value = material.Analogs;
-             ws.Cell(insertRow, 5).Value = material.Note;
-
-             wb.SaveAs(filePath);
-         }*/
+        #region Методы работы с Материалами
 
         public void AddMaterial(Materials material)
         {
@@ -1132,6 +1020,6 @@ namespace BK_Details_App.ViewModels
             }
         }
 
-        
+        #endregion               
     }
 }

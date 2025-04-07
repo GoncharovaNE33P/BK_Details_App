@@ -14,6 +14,7 @@ namespace BK_Details_App.ViewModels
 {
     internal class FavouritesVM : ViewModelBase
     {
+        #region Properties
         List<Materials> _favsList = new();
         public List<Materials> FavsList
         {
@@ -31,15 +32,16 @@ namespace BK_Details_App.ViewModels
         public bool IsAscFavs { get => _isAscFavs; set { this.RaiseAndSetIfChanged(ref _isAscFavs, value); FilterFavs(); } }
 
         Groups _selectedGrFavs = new();
-        public Groups SelectedGrFavs 
-        { 
-            get 
-            { 
-                if (_selectedGrFavs.Name is null) 
-                    return _groupsList[0]; 
-                else return _selectedGrFavs; 
-            } 
-            set { this.RaiseAndSetIfChanged(ref _selectedGrFavs, value); FilterFavs(); } }
+        public Groups SelectedGrFavs
+        {
+            get
+            {
+                if (_selectedGrFavs.Name is null)
+                    return _groupsList[0];
+                else return _selectedGrFavs;
+            }
+            set { this.RaiseAndSetIfChanged(ref _selectedGrFavs, value); FilterFavs(); }
+        }
 
         int _countItemsFavs = 0;
         public int CountItemsFavs { get => _countItemsFavs; set => this.RaiseAndSetIfChanged(ref _countItemsFavs, value); }
@@ -54,27 +56,43 @@ namespace BK_Details_App.ViewModels
         public List<Groups> GroupsList { get => _groupsList; set => this.RaiseAndSetIfChanged(ref _groupsList, value); }
 
         public DetailsVM DetailsVMObj => new DetailsVM();
+        #endregion
 
         public FavouritesVM()
         {
-            FilteredFavs = GetMaterials();
-            if (FilteredFavs.Count == 0) NothingFound = true;
-            GroupsList = [new Groups() { Name = "Все группы" }, .. DetailsVMObj.GroupsList];
-            CountItemsFavs = FilteredFavs.Count;
-            CountItemsFileFavs = FilteredFavs.Count;
-            FilterFavs();
+            try
+            {
+                FilteredFavs = GetMaterials();
+                if (FilteredFavs.Count == 0) NothingFound = true;
+                GroupsList = [new Groups() { Name = "Все группы" }, .. DetailsVMObj.GroupsList];
+                CountItemsFavs = FilteredFavs.Count;
+                CountItemsFileFavs = FilteredFavs.Count;
+                FilterFavs();
+            }
+            catch (Exception ex)
+            {
+                DetailsVMObj.ShowError("FavouritesVM: Ошибка!", ex.ToString());
+            }
         }
 
         List<Materials> GetMaterials()
         {
-            List<string> buf = new List<string>(DetailsVMObj.ReadFavorites());
-            if (buf.Count > 0)
+            try
             {
-                FavsList = DetailsVMObj.MaterialsList.Where(x => buf.Contains(x.Name)).ToList();
-                return FavsList;
+                List<string> buf = [.. DetailsVMObj.ReadFavorites()];
+                if (buf.Count > 0)
+                {
+                    FavsList = DetailsVMObj.MaterialsList.Where(x => buf.Contains(x.Name)).ToList();
+                    return FavsList;
+                }
+                else
+                {
+                    return new List<Materials>();
+                }
             }
-            else
+            catch (Exception ex)
             {
+                DetailsVMObj.ShowError("GetMaterials: Ошибка!", ex.ToString());
                 return new List<Materials>();
             }
         }
@@ -88,8 +106,6 @@ namespace BK_Details_App.ViewModels
                 {
                     FilteredFavs = FavsList.ToList();
                 }
-                
-
 
                 if (!string.IsNullOrWhiteSpace(SearchFavs))
                 {
@@ -122,39 +138,46 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBoxManager.GetMessageBoxStandard("FilterFavs: Ошибка", ex.Message, MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+                DetailsVMObj.ShowError("FilterFavs: Ошибка!", ex.ToString());
             }
         }
 
         public void RemoveFromFavorite(string _material)
         {
-            string _filePath = "test.xlsx";
-
-            Workbook _workbook = new Workbook(_filePath);
-            string _sheetName = "Избранное";
-            Worksheet _sheet = _workbook.Worksheets[_sheetName];
-            bool _foundFavForDel = false;
-            foreach (Cell _currentCell in _sheet.Cells)
+            try
             {
-                if (_currentCell.StringValue == _material)
+                string _filePath = "test.xlsx";
+
+                Workbook _workbook = new Workbook(_filePath);
+                string _sheetName = "Избранное";
+                Worksheet _sheet = _workbook.Worksheets[_sheetName];
+                bool _foundFavForDel = false;
+                foreach (Cell _currentCell in _sheet.Cells)
                 {
-                    _sheet.Cells.DeleteRow(_currentCell.Row);
-                    _foundFavForDel = true;
+                    if (_currentCell.StringValue == _material)
+                    {
+                        _sheet.Cells.DeleteRow(_currentCell.Row);
+                        _foundFavForDel = true;
+                    }
                 }
-            }
 
-            if (_foundFavForDel)
-            {
-                _workbook.Save(_filePath);
-            }
-            else
-            {
-                DetailsVMObj.ShowError("Внимание", "Материал для удаления не найден");
-            }
+                if (_foundFavForDel)
+                {
+                    _workbook.Save(_filePath);
+                }
+                else
+                {
+                    DetailsVMObj.ShowError("Внимание", "Материал для удаления не найден");
+                }
 
-            FavsList = GetMaterials();
-            CountItemsFileFavs = FavsList.Count;
-            FilterFavs();
+                FavsList = GetMaterials();
+                CountItemsFileFavs = FavsList.Count;
+                FilterFavs();
+            }
+            catch (Exception ex)
+            {
+                DetailsVMObj.ShowError("RemoveFromFavorite: Ошибка!", ex.ToString());
+            }
         }
 
         public void ToDetailsView()

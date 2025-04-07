@@ -7,8 +7,9 @@ using BK_Details_App.Models;
 namespace BK_Details_App.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
-    {
+    {        
         #region Properties
+
         public static MainWindowViewModel Instance; // создаем объект для обращения к другим объектам данного класса
 
         private static List<Materials> _allMaterials = new();
@@ -32,6 +33,7 @@ namespace BK_Details_App.ViewModels
             get => _us;
             set => this.RaiseAndSetIfChanged(ref _us, value);
         }        
+
         #endregion
     }
 }
