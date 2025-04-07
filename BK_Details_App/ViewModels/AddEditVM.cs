@@ -143,7 +143,6 @@ namespace BK_Details_App.ViewModels
 
                             var currentWorksheet = wb.Worksheet(NewMaterial.GroupNavigation.Name);
 
-                            int neededRow = -1;
                             int lastRow = currentWorksheet.LastRowUsed()?.RowNumber() ?? 0;
                             for (int i = 1; i < lastRow; i++)
                             {
@@ -158,7 +157,6 @@ namespace BK_Details_App.ViewModels
                             }
 
                             wb.SaveAs(fp);
-                            //DetailsVMObj.AddMaterial(NewMaterial);
                             CloseAction?.Invoke();
                             MainWindowViewModel.Instance.Us = new DetailsView();
                             DetailsVMObj.ShowSuccess("Успех", "Материал изменен");
