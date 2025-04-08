@@ -22,14 +22,15 @@
 		<Grid Grid.Row="1" ColumnDefinitions="50*, 50*">
 			<!--Левая часть-->
 			<Grid Grid.Column="0" ColumnDefinitions="3*, Auto" RowDefinitions="*,*,*">
-				<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="90"
-						 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+				<TextBox Classes="Search" Grid.Column="0" Grid.RowSpan="2" Height="50"
+						 HorizontalAlignment="Stretch" VerticalAlignment="Top"
 						 TextWrapping="Wrap" Text="{Binding SearchPEZs}"></TextBox>
-				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="0" Margin="10" PlaceholderText="Сортировка" SelectedIndex="{Binding IsAscendingPEZs}">
+				<Button Grid.Row="1" Grid.Column="0" Classes="ChooseUploadFile" HorizontalAlignment="Stretch" Margin="10" Command="{Binding MatchPEZMaterials}" Content="Сравнить ПЭЗ и материалы"></Button>
+				<ComboBox Classes="Choice" Grid.Row="0" Grid.Column="1" Margin="10" PlaceholderText="Сортировка" SelectedIndex="{Binding IsAscendingPEZs}">
 					<ComboBox.Items>От А до Я</ComboBox.Items>
 					<ComboBox.Items>От Я до А</ComboBox.Items>
 				</ComboBox>
-				<ComboBox Classes="Choice" Grid.Column="1" Grid.Row="1" Margin="10" PlaceholderText="Фильтрация" SelectedIndex="{Binding SelectedFilter}">
+				<ComboBox Classes="Choice" Grid.Row="1" Grid.Column="1"  Margin="10" PlaceholderText="Фильтрация" SelectedIndex="{Binding SelectedFilter}">
 					<ComboBox.Items>Без фильтрации</ComboBox.Items>
 					<ComboBox.Items>От 1 до 10</ComboBox.Items>
 					<ComboBox.Items>От 11 до 20</ComboBox.Items>
@@ -102,7 +103,7 @@
 												<TextBlock Classes="Name"  Text="Наименование:" Margin="0 0 0 10"></TextBlock>
 											</StackPanel>
 											<ScrollViewer Grid.Row="1" Height="50" Margin="0 0 15 10" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-												<TextBlock Classes="Name" FontWeight="Bold" Text="{Binding Name}" TextWrapping="Wrap"/>
+												<TextBlock Classes="Name" FontWeight="Bold" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" TextWrapping="Wrap"/>
 											</ScrollViewer>
 											<StackPanel Grid.Row="2">
 												<TextBlock Classes="Name" Text="Метка/и:" Margin="0 5 0 0"></TextBlock>
@@ -110,11 +111,11 @@
 											<StackPanel Grid.Row="3">
 												<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
 													HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
-													<TextBlock Classes="Name" Text="{Binding Mark}" TextWrapping="NoWrap" Margin="0 5 0 15"></TextBlock>
+													<TextBlock Classes="Name" Text="{Binding Mark}" ToolTip.Tip="{Binding Mark}" TextWrapping="NoWrap" Margin="0 5 0 15"></TextBlock>
 												</ScrollViewer>
 											</StackPanel>
 											<StackPanel Grid.Row="4">
-												<TextBlock Text="{Binding Quantity, StringFormat='Количество: {0}'}" Margin="0 5 0 0"></TextBlock>
+												<TextBlock Text="{Binding Quantity, StringFormat='Количество: {0}'}" ToolTip.Tip="{Binding Quantity, StringFormat='Количество: {0}'}" Margin="0 5 0 0"></TextBlock>
 											</StackPanel>
 										</Grid>
 
@@ -173,25 +174,36 @@
 										<ContextMenu>
 											<MenuItem Header="Добавить в избранное" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
 											<MenuItem Header="Редактировать" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).ShowAddMaterials}" CommandParameter="{Binding}"></MenuItem>
-											<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).AddToFavorite}" CommandParameter="{Binding Name}"></MenuItem>
+											<MenuItem Header="Удалить" Command="{Binding $parent[UserControl].((vm:DetailsVM)DataContext).DeleteMaterial}" CommandParameter="{Binding}"></MenuItem>
 										</ContextMenu>
 									</StackPanel.ContextMenu>
 									<Border Classes="ItemsLeft" Background="White">
-										<Grid ColumnDefinitions="90*, 10*" Height="160" Margin="10">
+										<Grid ColumnDefinitions="90*, 10*" Height="210" Margin="10">
 											<!--информация-->
-											<Grid Grid.Column="0" RowDefinitions="30*, 25*, 25*, 25*, 25*">
-
-												<TextBlock Grid.Row="0" FontWeight="Bold" Margin="0 0 5 0" Text="{Binding Name, StringFormat='Наименование: {0}'}" TextWrapping="Wrap"></TextBlock>
-												<TextBlock Grid.Row="1" Margin="0 0 5 0" Text="Аналоги:"></TextBlock>
+											<Grid Grid.Column="0" RowDefinitions="10*, 17*, 15*, 15*, 15*, 15*">
+												<TextBlock Grid.Row="0" Margin="0 0 5 0" Text="Наименование:" FontWeight="Bold"></TextBlock>
+												
 												<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
-													Grid.Row="2" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
-													<TextBlock Margin="0 5 0 5" Text="{Binding Analogs}"></TextBlock>	
+													Grid.Row="1" Margin="0 0 10 0" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+													<TextBlock FontWeight="Bold" Margin="0 10 5 0" Text="{Binding Name}" ToolTip.Tip="{Binding Name}"></TextBlock>
 												</ScrollViewer>
+												
+												<TextBlock Grid.Row="2" Margin="0 10 5 0" Text="Аналоги:"></TextBlock>
+												
 												<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
-													Grid.Row="3" Margin="0 15 0 0" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
-													<TextBlock Margin="0 10 0 10" Text="{Binding CategoryNavigation.Name}"></TextBlock>	
+													Grid.Row="3" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+													<TextBlock Margin="0 15 0 5" Text="{Binding Analogs}" ToolTip.Tip="{Binding Analogs}"></TextBlock>	
 												</ScrollViewer>
-												<TextBlock Grid.Row="4" Margin="0 10 0 0" Text="{Binding Note, StringFormat='Примечание: {0}'}" TextWrapping="Wrap"></TextBlock>
+												
+												<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
+													Grid.Row="4" Margin="0 15 0 0" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+													<TextBlock Margin="0 10 0 10" Text="{Binding CategoryNavigation.Name}" ToolTip.Tip="{Binding CategoryNavigation.Name}"></TextBlock>	
+												</ScrollViewer>
+												
+												<ScrollViewer PointerWheelChanged="OnPointerWheelChanged"
+													Grid.Row="5" Margin="0 0 0 0" Height="50" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+													<TextBlock Margin="0 10 0 10" Text="{Binding Note, StringFormat='Примечание: {0}'}" ToolTip.Tip="{Binding Note, StringFormat='Примечание: {0}'}" TextWrapping="Wrap"></TextBlock>
+												</ScrollViewer>
 											</Grid>
 
 											<!--единицы измерения-->

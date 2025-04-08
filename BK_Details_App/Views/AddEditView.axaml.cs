@@ -20,9 +20,9 @@ public partial class AddEditView : UserControl
         DataContext = new AddEditVM(category, group);
     }
 
-    public AddEditView(Category category, Groups group, Materials material)
+    public AddEditView(Materials material)
     {
         InitializeComponent();
-        DataContext = new AddEditVM(category, group, material);
+        DataContext = new AddEditVM(material);
     }
 }

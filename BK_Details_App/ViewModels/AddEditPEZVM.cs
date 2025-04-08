@@ -163,7 +163,6 @@ namespace BK_Details_App.ViewModels
 
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
-                    DetailsVMObject.MatchPEZMaterials();
 
                     MainWindowViewModel.Instance.Us = new DetailsView();
 
@@ -191,7 +190,6 @@ namespace BK_Details_App.ViewModels
 
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(pezList);
-                    DetailsVMObject.MatchPEZMaterials();
 
                     MainWindowViewModel.Instance.Us = new DetailsView();
 
@@ -248,9 +246,6 @@ namespace BK_Details_App.ViewModels
 
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
-                    DetailsVMObject.MatchPEZMaterials();
-
-                    MainWindowViewModel.Instance.Us = new DetailsView();
 
                     DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObject.NameFile}");
                 }
@@ -282,9 +277,6 @@ namespace BK_Details_App.ViewModels
 
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(pezList);
-                    DetailsVMObject.MatchPEZMaterials();
-
-                    MainWindowViewModel.Instance.Us = new DetailsView();
 
                     DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObject.NameFile}");
                 }

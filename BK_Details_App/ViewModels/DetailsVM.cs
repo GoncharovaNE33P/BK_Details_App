@@ -25,6 +25,8 @@ using ClosedXML.Excel;
 using Avalonia.Media;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Wordprocessing;
+using System.Xml.Linq;
 
 namespace BK_Details_App.ViewModels
 {
@@ -43,12 +45,12 @@ namespace BK_Details_App.ViewModels
         Models.Groups _selectedGroup = new();
         public Models.Groups SelectedGroup { get => _selectedGroup; set { this.RaiseAndSetIfChanged(ref _selectedGroup, value); FilterMaterials(); FilterCategories(); } }
 
-        List<Category> _categoriesList = new();
-        public List<Category> CategoriesList { get => _categoriesList; set => this.RaiseAndSetIfChanged(ref _categoriesList, value); }
-        List<Category> _filteredCategories = new();
-        public List<Category> FilteredCategories { get => _filteredCategories; set => this.RaiseAndSetIfChanged(ref _filteredCategories, value); }
-        Category _selectedCategory = new();
-        public Category SelectedCategory { get => _selectedCategory; set { this.RaiseAndSetIfChanged(ref _selectedCategory, value); FilterMaterials(); } }
+        List<Models.Category> _categoriesList = new();
+        public List<Models.Category> CategoriesList { get => _categoriesList; set => this.RaiseAndSetIfChanged(ref _categoriesList, value); }
+        List<Models.Category> _filteredCategories = new();
+        public List<Models.Category> FilteredCategories { get => _filteredCategories; set => this.RaiseAndSetIfChanged(ref _filteredCategories, value); }
+        Models.Category _selectedCategory = new();
+        public Models.Category SelectedCategory { get => _selectedCategory; set { this.RaiseAndSetIfChanged(ref _selectedCategory, value); FilterMaterials(); } }
 
         string _searchMaterials = "";
         public string SearchMaterials { get { return _searchMaterials; } set { _searchMaterials = value; FilterMaterials(); } }
@@ -119,6 +121,7 @@ namespace BK_Details_App.ViewModels
                     NameFile = FilePath.Split('\\')[FilePath.Split('\\').Length - 1];
                     CountItemsFilePEZ = MainWindowViewModel.BaseListPEZs.Count();
                     CountItemsPEZs = MainWindowViewModel.BaseListPEZs.Count();
+                    FiltersPEZs();
                 }
             }
             catch (Exception ex)
@@ -242,7 +245,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                if (FilePath == null)
+                if (FilePath == "")
                 {
                     ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
                     return;
@@ -326,7 +329,7 @@ namespace BK_Details_App.ViewModels
                     };
                     _groupsList.Add(group);
 
-                    Category? lastCategory = null;
+                    Models.Category? lastCategory = null;
                     bool lastWasBold = false;
                     int rows = worksheet.Cells.MaxDataRow;
                     int cols = worksheet.Cells.MaxDataColumn;
@@ -350,7 +353,7 @@ namespace BK_Details_App.ViewModels
                                     _categoriesList.RemoveAt(_categoriesList.Count - 1);
                                 }
 
-                                var category = new Category()
+                                var category = new Models.Category()
                                 {
                                     CategoryId = random.Next(1, 1000),
                                     Name = value,
@@ -455,8 +458,6 @@ namespace BK_Details_App.ViewModels
 
                 CountItemsFilePEZ = ListPEZs.Count();
                 CountItemsPEZs = ListPEZs.Count();
-
-                MatchPEZMaterials();
             }
             catch (Exception ex)
             {
@@ -499,8 +500,6 @@ namespace BK_Details_App.ViewModels
 
                 CountItemsFilePEZ = ListPEZs.Count();
                 CountItemsPEZs = ListPEZs.Count();
-
-                MatchPEZMaterials();
             }
             catch (Exception ex)
             {
@@ -512,7 +511,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                if (FilePath == null)
+                if (FilePath == "")
                 {
                     ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
                     return;
@@ -590,7 +589,11 @@ namespace BK_Details_App.ViewModels
                     Aspose.Cells.Worksheet sheet = workbook.Worksheets["Избранное"];
 
                     if (sheet == null)
-                        throw new ArgumentException("Лист не найден");
+                    {
+                        WorksheetCollection worksheets = workbook.Worksheets;
+                        Aspose.Cells.Worksheet worksheet = worksheets.Add("Избранное");
+                        workbook.Save(filePath);
+                    }
 
                     int rowCount = sheet.Cells.MaxDataRow;
 
@@ -874,38 +877,51 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
+                if (FilePath == "")
+                {
+                    ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
+                    return;
+                }
+
                 string[]? materialNames = MaterialsList.Select(x => x.Name).ToArray(); // список имен в массив, потому что вроде как ExtractOne лучше/в принципе работает с массивами
                 FuzzySharp.SimilarityRatio.Scorer.IRatioScorer? scorer = ScorerCache.Get<WeightedRatioScorer>();
-
+                               
                 Parallel.ForEach(CollectionPEZs, _element =>
                 {
-                    FuzzySharp.Extractor.ExtractedResult<string>? match = FuzzySharp.Process.ExtractOne(_element.Name, materialNames, s => s, scorer);
-
-                    _element.Matched = materialNames[match.Index];
-
-                    _element.Color = match.Score switch
-                    {
-                        100 => "#66C190",
-                        > 70 => "#FFE666",
-                        _ => "#FF9166"
-                    };
-
-                    _element.Color = match.Score switch
-                    {
-                        100 => "#66C190",
-                        > 70 => "#FFE666",
-                        _ => "#FF9166"
-                    };
-
-                    if (_element.Name == "метка" || _element.Name == "заземление")
-                    {
-                        _element.Color = "#FFFFFF";
-                    }
-                });
+                    MatchColors(_element, materialNames, scorer);
+                }); 
+                   
+                MainWindowViewModel.Instance.Us = new DetailsView();               
             }
             catch (Exception ex)
             {
                 ShowError("Ошибка!", ex.ToString());
+            }
+        }
+
+        void MatchColors(PEZ _element, string[]? materialNames, FuzzySharp.SimilarityRatio.Scorer.IRatioScorer? scorer)
+        {
+            FuzzySharp.Extractor.ExtractedResult<string>? match = FuzzySharp.Process.ExtractOne(_element.Name, materialNames, s => s, scorer);
+
+            _element.Matched = materialNames[match.Index];
+
+            _element.Color = match.Score switch
+            {
+                100 => "#66C190",
+                > 70 => "#FFE666",
+                _ => "#FF9166"
+            };
+
+            _element.Color = match.Score switch
+            {
+                100 => "#66C190",
+                > 70 => "#FFE666",
+                _ => "#FF9166"
+            };
+
+            if (_element.Name == "метка" || _element.Name == "заземление")
+            {
+                _element.Color = "#FFFFFF";
             }
         }
 
@@ -979,7 +995,8 @@ namespace BK_Details_App.ViewModels
 
                 if (_addWindow != null) return;
                 var viewModel = new AddEditVM(SelectedCategory, SelectedGroup);
-                if (material != null) viewModel = new AddEditVM(SelectedCategory, SelectedGroup, material);
+                if (material != null) 
+                    viewModel = new AddEditVM(material);
 
                 _addWindow = new Window
                 {
@@ -1010,6 +1027,44 @@ namespace BK_Details_App.ViewModels
             {
                 ShowError("ShowAdd: Ошибка!", ex.ToString());
             }
+        }
+
+        public void DeleteMaterial(Materials material)
+        {
+            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+            XLWorkbook wb = new XLWorkbook(filePath);
+            var ws = wb.Worksheet(material.GroupNavigation.Name);
+
+            int lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+            for (int i = 1; i <= lastRow; i++)
+            {
+                var cell = ws.Cell(i, 2);
+                if (cell.GetString() == material.Name)
+                {
+                    ws.Row(i).Delete();
+                    wb.SaveAs(filePath);
+                    break;
+                }
+            }
+
+            string fp = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+            XLWorkbook workbook = new XLWorkbook(fp);
+            var sheet = wb.Worksheet(material.GroupNavigation.Name);
+
+            if (sheet == null)
+                throw new ArgumentException("Лист не найден");
+
+            int rowCount = sheet.LastRowUsed()?.RowNumber() ?? 0;
+
+            for (int i = 1; i <= rowCount; i++)
+            {
+                string cellValue = sheet.Cell(i, 1).GetString();
+                if (!string.IsNullOrEmpty(cellValue) && cellValue == material.Name) sheet.Row(i).Delete();
+            }
+            workbook.SaveAs(fp);
+
+            MainWindowViewModel.Instance.Us = new DetailsView();
+            ShowSuccess("Успех!", "Материал удален");
         }
 
         #endregion               

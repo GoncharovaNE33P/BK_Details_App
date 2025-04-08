@@ -62,7 +62,7 @@ namespace BK_Details_App.ViewModels
             }
         }
 
-        public AddEditVM(Category category, Groups group, Materials material)
+        public AddEditVM(Materials material)
         {
             try
             {
@@ -71,8 +71,6 @@ namespace BK_Details_App.ViewModels
                 _oldName = material.Name;
 
                 _newMaterial = material;
-                _newMaterial.CategoryNavigation = category;
-                _newMaterial.GroupNavigation = group;
 
                 ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
             }
@@ -112,19 +110,23 @@ namespace BK_Details_App.ViewModels
                             if (favs.Contains(OldName))
                             {
                                 string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
-                                Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook(filePath);
-                                Aspose.Cells.Worksheet sheet = workbook.Worksheets["Избранное"];
+                                XLWorkbook workbook = new XLWorkbook(filePath);
+                                var sheet = workbook.Worksheet("Избранное");
 
                                 if (sheet == null)
                                     throw new ArgumentException("Лист не найден");
 
-                                int rowCount = sheet.Cells.MaxDataRow;
+                                int rowCount = sheet.LastRowUsed()?.RowNumber() ?? 0;
 
-                                for (int i = 0; i <= rowCount; i++)
+                                for (int i = 1; i <= rowCount; i++)
                                 {
-                                    string cellValue = sheet.Cells[i, 0].StringValue;
-                                    if (!string.IsNullOrEmpty(cellValue) && cellValue == OldName) cellValue = NewMaterial.Name;
+                                    if (!string.IsNullOrEmpty(sheet.Cell(i, 1).GetString()) && sheet.Cell(i, 1).GetString() == OldName)
+                                    {
+                                        sheet.Cell(i, 1).Value = NewMaterial.Name;
+                                        break;
+                                    }
                                 }
+                                workbook.SaveAs(filePath);
                             }
 
                             //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
