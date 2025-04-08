@@ -79,7 +79,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                List<string> buf = [.. DetailsVMObj.ReadFavorites()];
+                List<string> buf = [.. DetailsVMObj.ReadFavorites(DetailsVMObj.path)];
                 if (buf.Count > 0)
                 {
                     FavsList = DetailsVMObj.MaterialsList.Where(x => buf.Contains(x.Name)).ToList();

@@ -106,7 +106,7 @@ namespace BK_Details_App.ViewModels
                         if (NewMaterial != null)
                         {
                             //MainWindowViewModel.AllMaterials.Add(NewMaterial);
-                            List<string> favs = DetailsVMObj.ReadFavorites();
+                            List<string> favs = DetailsVMObj.ReadFavorites(DetailsVMObj.path);
                             if (favs.Contains(OldName))
                             {
                                 string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");

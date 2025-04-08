@@ -30,7 +30,7 @@ using System.Xml.Linq;
 
 namespace BK_Details_App.ViewModels
 {
-    internal class DetailsVM : ViewModelBase
+    public class DetailsVM : ViewModelBase
     {
         #region Properties
 
@@ -103,9 +103,17 @@ namespace BK_Details_App.ViewModels
         }
 
         #endregion
-
+        public string path = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+        public DetailsVM(bool skipInit = false) 
+        {            
+            if (skipInit)
+            {
+                return;
+            } 
+        }
         public DetailsVM()
         {
+
             try
             {
                 NameFile = "Тестовое ПЭ3";
@@ -113,7 +121,8 @@ namespace BK_Details_App.ViewModels
                 SelectedGroup = _groupsList[0];
                 SelectedCategory = _categoriesList.FirstOrDefault(x => x.GroupNavigation == SelectedGroup);
                 FilterMaterials();
-                Favs = ReadFavorites();
+
+                Favs = ReadFavorites(path);
                 if (MainWindowViewModel.BaseListPEZs.Count > 0) CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
                 if (MainWindowViewModel.FilePath != null)
                 {
@@ -573,15 +582,14 @@ namespace BK_Details_App.ViewModels
 
         #region Методы связанные с избранными материалами
 
-        public List<string> ReadFavorites()
+        public List<string> ReadFavorites(string filePath)
         {
             try
             {
                 List<string> values = new List<string>();
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                
 
-                if (!File.Exists(filePath))
-                    //throw new FileNotFoundException("Файл не найден в ReadFavorites", filePath);
+                if (!File.Exists(filePath))                    
                     return values;
                 else
                 {
@@ -618,7 +626,10 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0,
+               AppContext.BaseDirectory.IndexOf("TestProject1") - 1),
+               "BK_Details_App\\bin\\Debug\\net8.0\\Materials\\test.xlsx");
 
                 if (Favs.Any(x => x == _material))
                 {
@@ -651,7 +662,7 @@ namespace BK_Details_App.ViewModels
                 }
 
                 //ReadFavorites();
-                Favs = ReadFavorites();
+                Favs = ReadFavorites(path);
                 ShowSuccess("Успех", $"{_material} добавлен в избранное");
             }
             catch (Exception ex)

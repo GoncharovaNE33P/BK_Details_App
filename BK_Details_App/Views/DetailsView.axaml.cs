@@ -14,6 +14,12 @@ public partial class DetailsView : UserControl
         DataContext = new DetailsVM();
     }
 
+    public DetailsView(bool s)
+    {
+        InitializeComponent();
+        DataContext = new DetailsVM(s);
+    }
+
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         if (sender is ScrollViewer scrollViewer)
