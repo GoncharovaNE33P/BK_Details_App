@@ -626,10 +626,10 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
-                string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0,
-               AppContext.BaseDirectory.IndexOf("TestProject1") - 1),
-               "BK_Details_App\\bin\\Debug\\net8.0\\Materials\\test.xlsx");
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                // string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0,
+                //AppContext.BaseDirectory.IndexOf("TestProject1") - 1),
+                //"BK_Details_App\\bin\\Debug\\net8.0\\Materials\\test.xlsx");
 
                 if (Favs.Any(x => x == _material))
                 {

@@ -146,7 +146,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                string _filePath = "test.xlsx";
+                string _filePath = "Materials\\test.xlsx";
 
                 Workbook _workbook = new Workbook(_filePath);
                 string _sheetName = "Избранное";
