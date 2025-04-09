@@ -145,8 +145,8 @@ namespace BK_Details_App.ViewModels
         #region Методы для вывода оконных сообщений
         public void ShowError(string title, string message)
         {
-            try
-            {
+            //try
+            //{
                 MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
                 {
                     ContentTitle = title,
@@ -156,11 +156,11 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
 
                 }).ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                ShowError("ShowError: Ошибка!", ex.ToString());
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    ShowError("ShowError: Ошибка!", ex.ToString());
+            //}
         }
 
         public void ShowSuccess(string title, string message)

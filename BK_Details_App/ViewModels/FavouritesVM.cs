@@ -75,6 +75,10 @@ namespace BK_Details_App.ViewModels
             }
         }
 
+        /// <summary>
+        /// метод преобразующий список имен избранных материалов в список объектов избранных материалов
+        /// </summary>
+        /// <returns>лист типа Materials, содержащий избранные материалы</returns>
         List<Materials> GetMaterials()
         {
             try
@@ -97,6 +101,9 @@ namespace BK_Details_App.ViewModels
             }
         }
 
+        /// <summary>
+        /// метод фильтрации, сортировки, поиска избранных
+        /// </summary>
         void FilterFavs()
         {
             try
@@ -142,6 +149,10 @@ namespace BK_Details_App.ViewModels
             }
         }
 
+        /// <summary>
+        /// метод удаления из избранных
+        /// </summary>
+        /// <param name="_material">имя материала для удаления</param>
         public void RemoveFromFavorite(string _material)
         {
             try
