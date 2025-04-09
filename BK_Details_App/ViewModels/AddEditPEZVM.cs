@@ -119,6 +119,12 @@ namespace BK_Details_App.ViewModels
                     return;
                 }
 
+                if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
+                {
+                    DetailsVMObject.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                    return;
+                }
+
                 if (!int.TryParse(QuantityPEZ, out int result) || result == 0)
                 {
                     DetailsVMObject.ShowError("Ошибка!", "Введено некорректное значение в поле \"Количество\"!");

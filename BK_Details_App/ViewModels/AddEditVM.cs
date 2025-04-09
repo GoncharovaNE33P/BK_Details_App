@@ -91,6 +91,11 @@ namespace BK_Details_App.ViewModels
                     DetailsVMObj.ShowError("Ошибка!", "Поле Имя обязательно для заполнения");
                     return;
                 }
+                else if(DetailsVMObj.MaterialsList.Any(x => x.Name == NewMaterial.Name))
+                {
+                    DetailsVMObj.ShowError("Внимание!", NewMaterial.Name + " уже существует!");
+                    return;
+                }
                 else
                 {
                     if (NewMaterial.IdNumber == 0)

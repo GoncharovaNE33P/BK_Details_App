@@ -145,42 +145,28 @@ namespace BK_Details_App.ViewModels
         #region Методы для вывода оконных сообщений
         public void ShowError(string title, string message)
         {
-            //try
-            //{
-                MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
-                {
-                    ContentTitle = title,
-                    ContentMessage = message,
-                    Icon = MsBox.Avalonia.Enums.Icon.Error,
-                    WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+            MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
+            {
+                ContentTitle = title,
+                ContentMessage = message,
+                Icon = MsBox.Avalonia.Enums.Icon.Error,
+                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
 
-                }).ShowAsync();
-            //}
-            //catch (Exception ex)
-            //{
-            //    ShowError("ShowError: Ошибка!", ex.ToString());
-            //}
+            }).ShowAsync();
         }
 
         public void ShowSuccess(string title, string message)
         {
-            try
+            MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
             {
-                MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams
-                {
-                    ContentTitle = title,
-                    ContentMessage = message,
-                    Icon = MsBox.Avalonia.Enums.Icon.Success,
-                    WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                ContentTitle = title,
+                ContentMessage = message,
+                Icon = MsBox.Avalonia.Enums.Icon.Success,
+                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
 
-                }).ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                ShowError("ShowSuccess: Ошибка!", ex.ToString());
-            }
+            }).ShowAsync();
         }
 
         #endregion
