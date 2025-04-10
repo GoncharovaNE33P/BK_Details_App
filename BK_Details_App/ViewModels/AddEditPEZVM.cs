@@ -119,12 +119,6 @@ namespace BK_Details_App.ViewModels
                     return;
                 }
 
-                if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
-                {
-                    DetailsVMObject.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
-                    return;
-                }
-
                 if (!int.TryParse(QuantityPEZ, out int result) || result == 0)
                 {
                     DetailsVMObject.ShowError("Ошибка!", "Введено некорректное значение в поле \"Количество\"!");
@@ -136,9 +130,7 @@ namespace BK_Details_App.ViewModels
                 if (FilePath.EndsWith(".csv"))
                     ProcessCsv(FilePath);
                 else if (FilePath.EndsWith(".xlsx") || FilePath.EndsWith(".xls"))
-                    ProcessExcel(FilePath);
-
-                CloseAction?.Invoke();
+                    ProcessExcel(FilePath);                
             }
             catch (Exception ex)
             {
@@ -154,6 +146,12 @@ namespace BK_Details_App.ViewModels
             {
                 if (NewPEZ.IdNumber == 0)
                 {
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
+                    {
+                        DetailsVMObject.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                        return;
+                    }
+
                     NewPEZ.IdNumber = MainWindowViewModel.BaseListPEZs.Count > 0
                         ? MainWindowViewModel.BaseListPEZs.Max(p => p.IdNumber) + 1
                         : 1;
@@ -169,6 +167,8 @@ namespace BK_Details_App.ViewModels
 
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
+
+                    CloseAction?.Invoke();
 
                     MainWindowViewModel.Instance.Us = new DetailsView();
 
@@ -196,6 +196,8 @@ namespace BK_Details_App.ViewModels
 
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(pezList);
+
+                    CloseAction?.Invoke();
 
                     MainWindowViewModel.Instance.Us = new DetailsView();
 
@@ -235,6 +237,12 @@ namespace BK_Details_App.ViewModels
 
                 if (NewPEZ.IdNumber == 0)
                 {
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
+                    {
+                        DetailsVMObject.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                        return;
+                    }
+
                     NewPEZ.IdNumber = MainWindowViewModel.BaseListPEZs.Count > 0
                         ? MainWindowViewModel.BaseListPEZs.Max(p => p.IdNumber) + 1
                         : 1;
@@ -253,7 +261,9 @@ namespace BK_Details_App.ViewModels
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
 
-                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObject.NameFile}");
+                    CloseAction?.Invoke();
+
+                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObject.NameFile}");                    
                 }
                 else
                 {
@@ -284,7 +294,9 @@ namespace BK_Details_App.ViewModels
                     DetailsVMObject.CollectionPEZs.Clear();
                     DetailsVMObject.CollectionPEZs.AddRange(pezList);
 
-                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObject.NameFile}");
+                    CloseAction?.Invoke();
+
+                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObject.NameFile}");                    
                 }
             }
             catch (Exception ex)
