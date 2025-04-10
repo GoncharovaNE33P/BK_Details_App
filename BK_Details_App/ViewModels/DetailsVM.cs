@@ -511,6 +511,11 @@ namespace BK_Details_App.ViewModels
                     ShowError("Ошибка!", "Сначала необходимо выбрать файл!");
                     return;
                 }
+                if (!MainWindowViewModel.BaseListPEZs.Any(x => x.Color != null))
+                {
+                    ShowError("Ошибка!", "Сначала необходимо выполнить сравнение!");
+                    return;
+                }
 
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string folderPath = Path.Combine(desktopPath, "REPORT_Comparison");
