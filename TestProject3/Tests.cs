@@ -1,5 +1,13 @@
+using BK_Details_App;
+using BK_Details_App.Models;
 using BK_Details_App.ViewModels;
 using ClosedXML.Excel;
+using CsvHelper;
+using ExcelDataReader.Log;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.Logging;
+using Aspose.Cells;
+using System.Reflection;
 
 namespace TestProject3
 {
@@ -16,6 +24,7 @@ namespace TestProject3
 
         private readonly string logFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "test_results.txt");
         private string testFilePath;
+        public List<Materials> _materialsList = new List<Materials>();
 
         void TestAddToFavourite(string _material)
         {
@@ -46,6 +55,89 @@ namespace TestProject3
 
             //Сохраняем файл
             workbook.SaveAs(testFilePath);
+        }
+
+        public List<Materials> TestGetMaterials()
+        {
+            try
+            {
+                List<string> buf = [.. new DetailsVM(skipInit: true).ReadFavorites(testFilePath)];
+                TestReadFromExcelFile();
+                if (buf.Count > 0)
+                {
+                    List<Materials> FavsList = _materialsList.Where(x => buf.Contains(x.Name)).ToList();
+                    return FavsList;
+                }
+                else
+                {
+                    return new List<Materials>();
+                }
+            }
+            catch (Exception ex)
+            {
+                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+                ILogger logger = factory.CreateLogger<Program>();
+                logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
+                return new List<Materials>();
+            }
+        }
+
+        public void TestReadFromExcelFile()
+        {
+            try
+            {
+                string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0,
+               AppContext.BaseDirectory.IndexOf("TestProject3") - 1),
+               "BK_Details_App\\Materials\\materials.xlsx");
+                Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
+                WorksheetCollection collection = wb.Worksheets;
+                Random random = new Random();
+
+                for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
+                {
+                    Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
+
+                    bool lastWasBold = false;
+                    int rows = worksheet.Cells.MaxDataRow;
+                    int cols = worksheet.Cells.MaxDataColumn;
+
+                    for (int i = 1; i <= rows; i++)
+                    {
+                        for (int j = 1; j <= cols; j++)
+                        {
+                            var cell = worksheet.Cells[i, j];
+                            var style = cell.GetStyle();
+                            var value = cell.StringValue;
+
+                            if (string.IsNullOrWhiteSpace(value))
+                                break;
+
+                            var material = new Materials()
+                            {
+                                IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue,
+                                Name = cell.StringValue,
+                                Measurement = worksheet.Cells[i, j + 1].StringValue,
+                                Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
+                                Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
+                                GroupNavigation = new Groups(),
+                                Group = 0,
+                                CategoryNavigation = new Category(),
+                                Category = 0
+                            };
+                            _materialsList.Add(material);
+                            lastWasBold = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //ShowError("ReadFromExcelFile: Ошибка!", ex.ToString());
+                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+                Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
+                logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
+            }
         }
 
         [Test, Order(0)]
@@ -296,6 +388,194 @@ namespace TestProject3
                 File.AppendAllText(logFile, log);
                 Assert.Fail("Exception thrown: " + ex.ToString());
             }
+        }
+
+        [Test, Order(5)]
+        public void Test_OneFavoriteMaterial_ReturnsOneMaterial()
+        {
+            var expected = "[Двутавр 10Б1-ГК ГОСТ Р 57837-2017 / Ст3сп ГОСТ 535-88]";
+            var testName = "Test_OneFavoriteMaterial_ReturnsOneMaterial";
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    worksheet.Clear();
+                }
+                workbook.Save();
+            }
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                var worksheet = workbook.Worksheet("Избранное");
+
+                worksheet.Cell(1, 1).Value = "Двутавр 10Б1-ГК ГОСТ Р 57837-2017 / Ст3сп ГОСТ 535-88";
+
+                workbook.SaveAs(testFilePath);
+            }
+
+            var result = TestGetMaterials();
+            var actual = "[" + string.Join(", ", result.Select(x => x.Name)) + "]";
+            bool passed = result.Count == 1 && result[0].Name == "Двутавр 10Б1-ГК ГОСТ Р 57837-2017 / Ст3сп ГОСТ 535-88";
+
+            string status = passed ? "Passed" : "Failed";
+            string log = $"Test Name: {testName}{Environment.NewLine}" +
+                         $"Datetime now: {DateTime.Now}{Environment.NewLine}" +
+                         $"Expected: {expected}{Environment.NewLine}" +
+                         $"Actual: {actual}{Environment.NewLine}" +
+                         $"Status: {status}{Environment.NewLine}" +
+                         $"----------------------{Environment.NewLine}";
+            File.AppendAllText(logFile, log);
+            Assert.IsTrue(passed);
+        }
+
+        [Test, Order(6)]
+        public void Test_EmptyFavorites_ReturnsEmptyList()
+        {
+            var testName = "Test_EmptyFavorites_ReturnsEmptyList";
+            var expected = "[]";
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    worksheet.Clear();
+                }
+                workbook.Save();
+            }
+
+            var result = TestGetMaterials();
+            var actual = result == null ? "Лист не создан" : "[" + string.Join(", ", result.Select(x => x.Name)) + "]";
+            bool passed =  result!= null && result.Count == 0;
+
+            string status = passed ? "Passed" : "Failed";
+            string log = $"Test Name: {testName}{Environment.NewLine}" +
+                         $"Datetime now: {DateTime.Now}{Environment.NewLine}" +
+                         $"Expected: {expected}{Environment.NewLine}" +
+                         $"Actual: {actual}{Environment.NewLine}" +
+                         $"Status: {status}{Environment.NewLine}" +
+                         $"----------------------{Environment.NewLine}";
+            File.AppendAllText(logFile, log);
+            Assert.IsTrue(passed);
+        }
+
+        [Test, Order(7)]
+        public void Test_AllMaterialsAreFavorite_ReturnsFewMaterials()
+        {
+            var testName = "Test_AllMaterialsAreFavorite_ReturnsFewMaterials";
+            var expected = "[Винт 1-3,5х25 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006, Винт 2-3,5х16 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006]";
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    worksheet.Clear();
+                }
+                workbook.Save();
+            }
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                var worksheet = workbook.Worksheet("Избранное");
+
+                worksheet.Cell(1, 1).Value = "Винт 1-3,5х25 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006";
+                worksheet.Cell(2, 1).Value = "Винт 2-3,5х16 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006";
+
+                workbook.SaveAs(testFilePath);
+            }
+            _materialsList.Clear();
+            var result = TestGetMaterials();
+            var actual = "[" + string.Join(", ", result.Select(x => x.Name)) + "]";
+            bool passed = result.Count == 2 && result[0].Name == "Винт 1-3,5х25 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006"
+                && result[1].Name == "Винт 2-3,5х16 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006";
+
+            string status = passed ? "Passed" : "Failed";
+            string log = $"Test Name: {testName}{Environment.NewLine}" +
+                         $"Datetime now: {DateTime.Now}{Environment.NewLine}" +
+                         $"Expected: {expected}{Environment.NewLine}" +
+                         $"Actual: {actual}{Environment.NewLine}" +
+                         $"Status: {status}{Environment.NewLine}" +
+                         $"----------------------{Environment.NewLine}";
+            File.AppendAllText(logFile, log);
+            Assert.IsTrue(passed);
+        }
+
+        [Test, Order(8)]
+        public void Test_WeAreExpectingTheListDataType_ReturnsListDataType()
+        {
+            var testName = "Test_WeAreExpectingTheListDataType_ReturnsListDataType";
+            var expected = typeof(List<Materials>);
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    worksheet.Clear();
+                }
+                workbook.Save();
+            }
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                var worksheet = workbook.Worksheet("Избранное");
+
+                worksheet.Cell(1, 1).Value = "Винт 1-3,5х25 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006";
+
+                workbook.SaveAs(testFilePath);
+            }
+
+            var result = TestGetMaterials();
+            var actual = "[" + string.Join(", ", result.Select(x => x.Name)) + "]";
+            bool passed = result.GetType() == expected;
+
+            string status = passed ? "Passed" : "Failed";
+            string log = $"Test Name: {testName}{Environment.NewLine}" +
+                         $"Datetime now: {DateTime.Now}{Environment.NewLine}" +
+                         $"Expected: {expected}{Environment.NewLine}" +
+                         $"Actual: {actual}{Environment.NewLine}" +
+                         $"Status: {status}{Environment.NewLine}" +
+                         $"----------------------{Environment.NewLine}";
+            File.AppendAllText(logFile, log);
+            Assert.IsTrue(passed);
+        }
+
+        [Test, Order(9)]
+        public void Test_WeAreNotExpectingTheListStringDataType_ReturnsListStringDataType()
+        {
+            var testName = "Test_WeAreNotExpectingTheListStringDataType_ReturnsListStringDataType";
+            var expected = typeof(string);
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    worksheet.Clear();
+                }
+                workbook.Save();
+            }
+
+            using (var workbook = new XLWorkbook(testFilePath))
+            {
+                var worksheet = workbook.Worksheet("Избранное");
+
+                worksheet.Cell(1, 1).Value = "Винт 1-3,5х25 Н Хим.Фос.прп. ТУ 16 40-015-55798700-2006";
+
+                workbook.SaveAs(testFilePath);
+            }
+
+            var result = TestGetMaterials();
+            var actual = "[" + string.Join(", ", result.Select(x => x.Name)) + "]";
+            bool passed = result.GetType() != expected;
+
+            string status = passed ? "Passed" : "Failed";
+            string log = $"Test Name: {testName}{Environment.NewLine}" +
+                         $"Datetime now: {DateTime.Now}{Environment.NewLine}" +
+                         $"Expected: {expected}{Environment.NewLine}" +
+                         $"Actual: {actual}{Environment.NewLine}" +
+                         $"Status: {status}{Environment.NewLine}" +
+                         $"----------------------{Environment.NewLine}";
+            File.AppendAllText(logFile, log);
+            Assert.IsTrue(passed);
         }
     }
 }

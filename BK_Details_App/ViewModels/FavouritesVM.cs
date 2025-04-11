@@ -12,7 +12,7 @@ using ReactiveUI;
 
 namespace BK_Details_App.ViewModels
 {
-    internal class FavouritesVM : ViewModelBase
+    public class FavouritesVM : ViewModelBase
     {
         #region Properties
         List<Materials> _favsList = new();
@@ -58,6 +58,14 @@ namespace BK_Details_App.ViewModels
         public DetailsVM DetailsVMObj => new DetailsVM();
         #endregion
 
+        public FavouritesVM(bool skipInit = false)
+        {
+            if (skipInit)
+            {
+                return;
+            }
+        }
+
         public FavouritesVM()
         {
             try
@@ -79,7 +87,7 @@ namespace BK_Details_App.ViewModels
         /// метод преобразующий список имен избранных материалов в список объектов избранных материалов
         /// </summary>
         /// <returns>лист типа Materials, содержащий избранные материалы</returns>
-        List<Materials> GetMaterials()
+        public List<Materials> GetMaterials()
         {
             try
             {

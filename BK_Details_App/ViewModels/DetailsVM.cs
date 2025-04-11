@@ -27,6 +27,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace BK_Details_App.ViewModels
 {
@@ -389,7 +390,10 @@ namespace BK_Details_App.ViewModels
 
             catch (Exception ex)
             {
-                ShowError("ReadFromExcelFile: Ошибка!", ex.ToString());
+                //ShowError("ReadFromExcelFile: Ошибка!", ex.ToString());
+                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+                Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
+                logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
             }
         }
 

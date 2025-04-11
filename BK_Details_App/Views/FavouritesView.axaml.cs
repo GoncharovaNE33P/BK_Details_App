@@ -8,6 +8,11 @@ namespace BK_Details_App;
 
 public partial class FavouritesView : UserControl
 {
+    public FavouritesView(bool a)
+    {
+        InitializeComponent();
+        DataContext = new FavouritesVM(a);
+    }
     public FavouritesView()
     {
         InitializeComponent();
