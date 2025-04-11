@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Aspose.Cells;
 using BK_Details_App.Models;
+using ClosedXML.Excel;
 using DynamicData.Kernel;
 using MsBox.Avalonia;
 using ReactiveUI;
@@ -166,27 +167,37 @@ namespace BK_Details_App.ViewModels
             try
             {
                 string _filePath = "Materials\\test.xlsx";
-
-                Workbook _workbook = new Workbook(_filePath);
                 string _sheetName = "Избранное";
-                Worksheet _sheet = _workbook.Worksheets[_sheetName];
                 bool _foundFavForDel = false;
-                foreach (Cell _currentCell in _sheet.Cells)
-                {
-                    if (_currentCell.StringValue == _material)
-                    {
-                        _sheet.Cells.DeleteRow(_currentCell.Row);
-                        _foundFavForDel = true;
-                    }
-                }
 
-                if (_foundFavForDel)
+                using (var workbook = new XLWorkbook(_filePath))
                 {
-                    _workbook.Save(_filePath);
-                }
-                else
-                {
-                    DetailsVMObj.ShowError("Внимание", "Материал для удаления не найден");
+                    var worksheet = workbook.Worksheet(_sheetName);
+
+                    // Поиск строки, содержащей нужный материал
+                    foreach (var row in worksheet.RowsUsed())
+                    {
+                        foreach (var cell in row.CellsUsed())
+                        {
+                            if (cell.GetString() == _material)
+                            {
+                                row.Delete();
+                                _foundFavForDel = true;
+                                break;
+                            }
+                        }
+                        if (_foundFavForDel)
+                            break;
+                    }
+
+                    if (_foundFavForDel)
+                    {
+                        workbook.Save();
+                    }
+                    else
+                    {
+                        DetailsVMObj.ShowError("Внимание", "Материал для удаления не найден");
+                    }
                 }
 
                 FavsList = GetMaterials();

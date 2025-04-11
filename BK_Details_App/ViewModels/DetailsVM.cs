@@ -1068,7 +1068,7 @@ namespace BK_Details_App.ViewModels
                 if (!string.IsNullOrEmpty(cellValue) && cellValue == material.Name) sheet.Row(i).Delete();
             }
             workbook.SaveAs(fp);
-
+            new FavouritesVM().RemoveFromFavorite(material.Name);
             MainWindowViewModel.Instance.Us = new DetailsView();
             ShowSuccess("Успех!", "Материал удален");
         }

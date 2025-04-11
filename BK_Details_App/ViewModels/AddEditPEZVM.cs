@@ -41,7 +41,10 @@ namespace BK_Details_App.ViewModels
         public ReactiveCommand<Unit,Unit> ToBackCommand { get; }
         public Action? CloseAction { get; set; }
 
-        DetailsVM DetailsVMObject => new DetailsVM();
+        DetailsVM DetailsVMObj => new DetailsVM();
+
+        private string _oldName;
+        public string OldName { get => _oldName; set => this.RaiseAndSetIfChanged(ref _oldName, value); }
 
         #endregion
 
@@ -60,7 +63,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                DetailsVMObject.ShowError("AddEditPEZVM1: Ошибка!", ex.ToString());
+                DetailsVMObj.ShowError("AddEditPEZVM1: Ошибка!", ex.ToString());
             }
         }
 
@@ -68,26 +71,28 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
+                LoadData(id);
+
                 if (id == 0)
                 {
                     _headPage = "Добавление ПЭЗ";
                     _buttonName = "Добавить ПЭЗ";
+                    _oldName = "";
                 }
                 else
                 {
                     _headPage = "Редактирование ПЭЗ";
                     _buttonName = "Сохранить изменения ПЭЗ";
+                    _oldName = _newPEZ.Name;
                 }
 
                 FilePath = filePath;
-
-                LoadData(id);
 
                 ToBackCommand = ReactiveCommand.Create(() => CloseAction?.Invoke());
             }
             catch (Exception ex)
             {
-                DetailsVMObject.ShowError("AddEditPEZVM2: Ошибка!", ex.ToString());
+                DetailsVMObj.ShowError("AddEditPEZVM2: Ошибка!", ex.ToString());
             }
         }
 
@@ -105,7 +110,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                DetailsVMObject.ShowError("LoadData: Ошибка!", ex.ToString());
+                DetailsVMObj.ShowError("LoadData: Ошибка!", ex.ToString());
             }
         }
 
@@ -115,13 +120,13 @@ namespace BK_Details_App.ViewModels
             {
                 if (string.IsNullOrEmpty(NewPEZ.Name) || string.IsNullOrEmpty(NewPEZ.Mark) || string.IsNullOrEmpty(QuantityPEZ))
                 {
-                    DetailsVMObject.ShowError("Ошибка!", "Заполните все поля!");
+                    DetailsVMObj.ShowError("Ошибка!", "Заполните все поля!");
                     return;
                 }
 
                 if (!int.TryParse(QuantityPEZ, out int result) || result == 0)
                 {
-                    DetailsVMObject.ShowError("Ошибка!", "Введено некорректное значение в поле \"Количество\"!");
+                    DetailsVMObj.ShowError("Ошибка!", "Введено некорректное значение в поле \"Количество\"!");
                     return;
                 }
 
@@ -134,7 +139,7 @@ namespace BK_Details_App.ViewModels
             }
             catch (Exception ex)
             {
-                DetailsVMObject.ShowError("AddEditPEZ: Ошибка!", ex.ToString());
+                DetailsVMObj.ShowError("AddEditPEZ: Ошибка!", ex.ToString());
             }
         }
 
@@ -148,7 +153,7 @@ namespace BK_Details_App.ViewModels
                 {
                     if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
                     {
-                        DetailsVMObject.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                        DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
                         return;
                     }
 
@@ -165,17 +170,23 @@ namespace BK_Details_App.ViewModels
                         writer.WriteLine(line);
                     }
 
-                    DetailsVMObject.CollectionPEZs.Clear();
-                    DetailsVMObject.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
+                    DetailsVMObj.CollectionPEZs.Clear();
+                    DetailsVMObj.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
 
                     CloseAction?.Invoke();
 
                     MainWindowViewModel.Instance.Us = new DetailsView();
 
-                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObject.NameFile}");
+                    DetailsVMObj.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObj.NameFile}");
                 }
                 else
                 {
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name) && NewPEZ.Name != OldName)
+                    {
+                        DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                        return;
+                    }
+
                     List<PEZ> pezList = MainWindowViewModel.BaseListPEZs;
 
                     int index = pezList.FindIndex(p => p.IdNumber == NewPEZ.IdNumber);
@@ -194,19 +205,19 @@ namespace BK_Details_App.ViewModels
                         }
                     }
 
-                    DetailsVMObject.CollectionPEZs.Clear();
-                    DetailsVMObject.CollectionPEZs.AddRange(pezList);
+                    DetailsVMObj.CollectionPEZs.Clear();
+                    DetailsVMObj.CollectionPEZs.AddRange(pezList);
 
                     CloseAction?.Invoke();
 
                     MainWindowViewModel.Instance.Us = new DetailsView();
 
-                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObject.NameFile}");
+                    DetailsVMObj.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObj.NameFile}");
                 }
             }
             catch (Exception ex)
             {
-                DetailsVMObject.ShowError("ProcessCsv: Ошибка!", ex.ToString());
+                DetailsVMObj.ShowError("ProcessCsv: Ошибка!", ex.ToString());
             }
         }
 
@@ -226,7 +237,7 @@ namespace BK_Details_App.ViewModels
                 else
                 {
                     workbook = new XLWorkbook();
-                    worksheet = workbook.AddWorksheet(DetailsVMObject.NameFile);
+                    worksheet = workbook.AddWorksheet(DetailsVMObj.NameFile);
 
                     // Заголовки
                     worksheet.Cell(1, 1).Value = "#";
@@ -239,7 +250,7 @@ namespace BK_Details_App.ViewModels
                 {
                     if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
                     {
-                        DetailsVMObject.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                        DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
                         return;
                     }
 
@@ -258,15 +269,21 @@ namespace BK_Details_App.ViewModels
 
                     workbook.SaveAs(filePath);
 
-                    DetailsVMObject.CollectionPEZs.Clear();
-                    DetailsVMObject.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
+                    DetailsVMObj.CollectionPEZs.Clear();
+                    DetailsVMObj.CollectionPEZs.AddRange(MainWindowViewModel.BaseListPEZs);
 
                     CloseAction?.Invoke();
 
-                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObject.NameFile}");                    
+                    DetailsVMObj.ShowSuccess("Успех!", $"{NewPEZ.Name} добавлен в файл {DetailsVMObj.NameFile}");                    
                 }
                 else
                 {
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name) && NewPEZ.Name != OldName)
+                    {
+                        DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
+                        return;
+                    }
+
                     List<PEZ> pezList = MainWindowViewModel.BaseListPEZs;
                     int index = pezList.FindIndex(p => p.IdNumber == NewPEZ.IdNumber);
                     if (index != -1) pezList[index] = NewPEZ;
@@ -291,17 +308,17 @@ namespace BK_Details_App.ViewModels
 
                     workbook.SaveAs(filePath);
 
-                    DetailsVMObject.CollectionPEZs.Clear();
-                    DetailsVMObject.CollectionPEZs.AddRange(pezList);
+                    DetailsVMObj.CollectionPEZs.Clear();
+                    DetailsVMObj.CollectionPEZs.AddRange(pezList);
 
                     CloseAction?.Invoke();
 
-                    DetailsVMObject.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObject.NameFile}");                    
+                    DetailsVMObj.ShowSuccess("Успех!", $"{NewPEZ.Name} изменён в файле {DetailsVMObj.NameFile}");                    
                 }
             }
             catch (Exception ex)
             {
-                DetailsVMObject.ShowError("ProcessExcel: Ошибка!", ex.ToString());
+                DetailsVMObj.ShowError("ProcessExcel: Ошибка!", ex.ToString());
             }
         }
 
