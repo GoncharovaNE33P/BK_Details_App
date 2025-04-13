@@ -468,11 +468,11 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                Encoding? encoding = Encoding.UTF8;
+                Encoding encoding = Encoding.UTF8;
+                byte[] bytes = File.ReadAllBytes(filePath);
 
-                byte[]? bytes = File.ReadAllBytes(filePath);
-                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF) encoding = Encoding.UTF8;
-                else encoding = Encoding.GetEncoding("Windows-1251");
+                if (bytes.Length >= 3 && bytes[0] != 0xEF || bytes[1] != 0xBB || bytes[2] != 0xBF)
+                    encoding = Encoding.GetEncoding("Windows-1251");
 
                 string[]? lines = File.ReadAllLines(filePath, encoding);
 
