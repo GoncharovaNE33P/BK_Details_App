@@ -581,8 +581,7 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                List<string> values = new List<string>();
-                
+                List<string> values = new List<string>();                
 
                 if (!File.Exists(filePath))                    
                     return values;
@@ -622,9 +621,6 @@ namespace BK_Details_App.ViewModels
             try
             {
                 string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
-                // string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0,
-                //AppContext.BaseDirectory.IndexOf("TestProject1") - 1),
-                //"BK_Details_App\\bin\\Debug\\net8.0\\Materials\\test.xlsx");
 
                 if (Favs.Any(x => x == _material))
                 {
@@ -1054,7 +1050,29 @@ namespace BK_Details_App.ViewModels
             }
 
             string fp = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
-            XLWorkbook workbook = new XLWorkbook(fp);
+
+            
+            XLWorkbook workbook;
+            if (File.Exists(fp))
+            {
+                workbook = new XLWorkbook(fp);
+            }
+            else
+            {
+                workbook = new XLWorkbook();
+            }
+
+            string sheetName = "Избранное";
+            var sheetFavs = workbook.Worksheets.Contains(sheetName)
+            ? workbook.Worksheet(sheetName)
+            : workbook.AddWorksheet(sheetName);
+
+            //Определяем первую пустую строку
+            int lastRowFavs = sheetFavs.LastRowUsed()?.RowNumber() + 1 ?? 1;
+
+            //Сохраняем файл
+            workbook.SaveAs(fp);
+
             var sheet = wb.Worksheet(material.GroupNavigation.Name);
 
             if (sheet == null)
@@ -1068,7 +1086,11 @@ namespace BK_Details_App.ViewModels
                 if (!string.IsNullOrEmpty(cellValue) && cellValue == material.Name) sheet.Row(i).Delete();
             }
             workbook.SaveAs(fp);
-            new FavouritesVM().RemoveFromFavorite(material.Name);
+
+            if (Favs.Count > 0)
+            {
+                new FavouritesVM().RemoveFromFavorite(material.Name);
+            }
             MainWindowViewModel.Instance.Us = new DetailsView();
             ShowSuccess("Успех!", "Материал удален");
         }

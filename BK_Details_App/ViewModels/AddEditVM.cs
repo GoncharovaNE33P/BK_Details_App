@@ -117,7 +117,6 @@ namespace BK_Details_App.ViewModels
                                 return;
                             }
 
-                            //MainWindowViewModel.AllMaterials.Add(NewMaterial);
                             List<string> favs = DetailsVMObj.ReadFavorites(DetailsVMObj.path);
                             if (favs.Contains(OldName))
                             {
