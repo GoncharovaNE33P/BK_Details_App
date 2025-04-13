@@ -151,7 +151,7 @@ namespace BK_Details_App.ViewModels
                 ContentTitle = title,
                 ContentMessage = message,
                 Icon = MsBox.Avalonia.Enums.Icon.Error,
-                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico"))),
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
 
             }).ShowAsync();
@@ -164,7 +164,7 @@ namespace BK_Details_App.ViewModels
                 ContentTitle = title,
                 ContentMessage = message,
                 Icon = MsBox.Avalonia.Enums.Icon.Success,
-                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png"))),
+                WindowIcon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico"))),
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
 
             }).ShowAsync();
@@ -694,7 +694,7 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
                     Title = "BK_Details_App",
-                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png")))
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico")))
                 };
 
                 viewModel.CloseAction = () =>
@@ -739,7 +739,7 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
                     Title = "BK_Details_App",
-                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png")))
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico")))
                 };
 
                 viewModel.CloseAction = () =>
@@ -1008,7 +1008,7 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
                     Title = "BK_Details_App",
-                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.png")))
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico")))
                 };
 
                 viewModel.CloseAction = () =>

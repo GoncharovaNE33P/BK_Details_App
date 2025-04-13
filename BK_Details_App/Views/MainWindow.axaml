@@ -8,7 +8,7 @@
         x:DataType="vm:MainWindowViewModel"
 		MinHeight="750"
 		MinWidth="1420"
-        Icon="/Assets/logobk.png"
+        Icon="/Assets/logobk.ico"
         Title="BK_Details_App">
 
     <Design.DataContext>
