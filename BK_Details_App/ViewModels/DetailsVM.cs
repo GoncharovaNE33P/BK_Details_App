@@ -104,7 +104,13 @@ namespace BK_Details_App.ViewModels
         }
 
         #endregion
-        public string path = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+        //public string path = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+        static string appDataPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "BK_Details_App",
+        "Materials");
+
+        public string path = Path.Combine(appDataPath, "test.xlsx");
         public DetailsVM(bool skipInit = false) 
         {            
             if (skipInit)
@@ -305,7 +311,25 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+                //string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+                string appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "BK_Details_App",
+                "Materials");
+
+                Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+
+                string filePath = Path.Combine(appDataPath, "materials.xlsx");
+
+                if (!File.Exists(filePath))
+                {
+                    string installedFile = Path.Combine(AppContext.BaseDirectory, "Materials", "materials.xlsx");
+                    if (File.Exists(installedFile))
+                    {
+                        File.Copy(installedFile, filePath, overwrite: false);
+                    }
+                }
+
                 Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
                 WorksheetCollection collection = wb.Worksheets;
                 Random random = new Random();
@@ -390,7 +414,6 @@ namespace BK_Details_App.ViewModels
 
             catch (Exception ex)
             {
-                //ShowError("ReadFromExcelFile: Ошибка!", ex.ToString());
                 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
                 Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
                 logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
@@ -620,7 +643,15 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                string appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "BK_Details_App",
+                "Materials");
+
+                Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+
+                string filePath = Path.Combine(appDataPath, "test.xlsx");
 
                 if (Favs.Any(x => x == _material))
                 {
@@ -933,7 +964,16 @@ namespace BK_Details_App.ViewModels
 
         public void AddMaterial(Materials material)
         {
-            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+            //string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+            string appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "BK_Details_App",
+            "Materials");
+
+            Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+
+            string filePath = Path.Combine(appDataPath, "materials.xlsx");
+
             XLWorkbook wb = new XLWorkbook(filePath);
             var ws = wb.Worksheet(material.GroupNavigation.Name);
 
@@ -1033,7 +1073,16 @@ namespace BK_Details_App.ViewModels
 
         public void DeleteMaterial(Materials material)
         {
-            string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+            //string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+            string appDataPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "BK_Details_App",
+            "Materials");
+
+            Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+
+            string filePath = Path.Combine(appDataPath, "materials.xlsx");
+
             XLWorkbook wb = new XLWorkbook(filePath);
             var ws = wb.Worksheet(material.GroupNavigation.Name);
 
@@ -1049,9 +1098,11 @@ namespace BK_Details_App.ViewModels
                 }
             }
 
-            string fp = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+            //string fp = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
-            
+            string fp = Path.Combine(appDataPath, "materials.xlsx");
+
+
             XLWorkbook workbook;
             if (File.Exists(fp))
             {

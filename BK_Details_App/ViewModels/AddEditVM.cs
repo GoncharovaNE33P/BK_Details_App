@@ -86,6 +86,13 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
+                string appDataPath = Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                            "BK_Details_App",
+                            "Materials");
+
+                Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+
                 if (string.IsNullOrEmpty(NewMaterial.Name))
                 {
                     DetailsVMObj.ShowError("Ошибка!", "Поле Имя обязательно для заполнения");
@@ -120,7 +127,8 @@ namespace BK_Details_App.ViewModels
                             List<string> favs = DetailsVMObj.ReadFavorites(DetailsVMObj.path);
                             if (favs.Contains(OldName))
                             {
-                                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                                //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
+                                string filePath = Path.Combine(appDataPath, "test.xlsx");
                                 XLWorkbook workbook = new XLWorkbook(filePath);
                                 var sheet = workbook.Worksheet("Избранное");
 
@@ -142,7 +150,9 @@ namespace BK_Details_App.ViewModels
 
                             //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-                            string fp = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
+                            //string fp = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");   
+
+                            string fp = Path.Combine(appDataPath, "materials.xlsx");
                             XLWorkbook wb = new XLWorkbook(fp);
 
                             foreach (var ws in wb.Worksheets)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Text;
@@ -166,7 +167,14 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                string _filePath = "Materials\\test.xlsx";
+                //string _filePath = "Materials\\test.xlsx";
+                string appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "BK_Details_App",
+                "Materials");
+
+                Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+                string _filePath = Path.Combine(appDataPath, "test.xlsx");
                 string _sheetName = "Избранное";
                 bool _foundFavForDel = false;
 
