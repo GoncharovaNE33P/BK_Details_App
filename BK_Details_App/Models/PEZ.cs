@@ -14,5 +14,18 @@ namespace BK_Details_App.Models
         public int Quantity { get; set; }
         public string Color { get; set; }
         public string Matched { get; set; }
+
+        public PEZ Clone()
+        {
+            return new PEZ
+            {
+                IdNumber = this.IdNumber,
+                Name = this.Name,
+                Mark = this.Mark,
+                Quantity = this.Quantity,
+                Color = this.Color,
+                Matched = this.Matched
+            };
+        }
     }
 }

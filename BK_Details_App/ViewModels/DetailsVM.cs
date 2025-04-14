@@ -307,7 +307,7 @@ namespace BK_Details_App.ViewModels
 
         #region Методы импорта и экспорта данных Excel
 
-        public void ReadFromExcelFile()
+        /*public void ReadFromExcelFile()
         {
             try
             {
@@ -344,7 +344,7 @@ namespace BK_Details_App.ViewModels
 
                     var group = new BK_Details_App.Models.Groups()
                     {
-                        GroupIdNumber = random.Next(1, 1000),
+                        GroupIdNumber = random.Next(),
                         Name = worksheet.Name
                     };
                     _groupsList.Add(group);
@@ -417,6 +417,120 @@ namespace BK_Details_App.ViewModels
                 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
                 Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
                 logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
+            }
+        }*/
+
+        public void ReadFromExcelFile()
+        {
+            try
+            {
+                string appDataPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "BK_Details_App",
+                    "Materials");
+
+                Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
+
+                string filePath = Path.Combine(appDataPath, "materials.xlsx");
+
+                if (!File.Exists(filePath))
+                {
+                    string installedFile = Path.Combine(AppContext.BaseDirectory, "Materials", "materials.xlsx");
+                    if (File.Exists(installedFile))
+                    {
+                        File.Copy(installedFile, filePath, overwrite: false);
+                    }
+                }
+
+                var workbook = new XLWorkbook(filePath);
+                var random = new Random();
+
+                _groupsList.Clear();
+                _categoriesList.Clear();
+                _materialsList.Clear();
+
+                foreach (var worksheet in workbook.Worksheets)
+                {
+                    var group = new Models.Groups()
+                    {
+                        GroupIdNumber = random.Next(),
+                        Name = worksheet.Name
+                    };
+                    _groupsList.Add(group);
+
+                    Models.Category? lastCategory = null;
+                    bool lastWasBold = false;
+                    int lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+                    int lastCol = worksheet.LastColumnUsed()?.ColumnNumber() ?? 0;
+
+                    for (int i = 2; i <= lastRow; i++) // начиная со второй строки
+                    {
+                        for (int j = 2; j <= lastCol; j++) // начиная со второй колонки
+                        {
+                            var cell = worksheet.Cell(i, j);
+                            var value = cell.GetString();
+
+                            if (string.IsNullOrWhiteSpace(value))
+                                break;
+
+                            bool isBold = cell.Style.Font.Bold;
+
+                            if (isBold)
+                            {
+                                if (lastWasBold && _categoriesList.Count > 0)
+                                {
+                                    _categoriesList.RemoveAt(_categoriesList.Count - 1);
+                                }
+
+                                var category = new Models.Category()
+                                {
+                                    CategoryId = random.Next(1, 1000),
+                                    Name = value,
+                                    GroupNavigation = group,
+                                    Group = group.GroupIdNumber
+                                };
+                                _categoriesList.Add(category);
+                                lastCategory = category;
+                                lastWasBold = true;
+                                break;
+                            }
+                            else if (lastCategory != null)
+                            {
+                                int id = 0;
+                                var idCell = worksheet.Cell(i, j - 1);
+                                if (!string.IsNullOrWhiteSpace(idCell.GetString()) && int.TryParse(idCell.GetString(), out int parsedId))
+                                    id = parsedId;
+                                else
+                                    id = random.Next(1, 1000);
+
+                                var material = new Materials()
+                                {
+                                    IdNumber = id,
+                                    Name = cell.GetString(),
+                                    Measurement = worksheet.Cell(i, j + 1).GetString(),
+                                    Analogs = string.IsNullOrWhiteSpace(worksheet.Cell(i, j + 2).GetString()) ? "Аналогов нет" : worksheet.Cell(i, j + 2).GetString(),
+                                    Note = string.IsNullOrWhiteSpace(worksheet.Cell(i, j + 3).GetString()) ? "Примечание отсутствует" : worksheet.Cell(i, j + 3).GetString(),
+                                    GroupNavigation = group,
+                                    Group = group.GroupIdNumber,
+                                    CategoryNavigation = lastCategory,
+                                    Category = lastCategory.CategoryId
+                                };
+                                _materialsList.Add(material);
+                                lastWasBold = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                CountItemsMaterials = _materialsList.Count();
+                CountItemsFileMaterials = _materialsList.Count();
+                MainWindowViewModel.AllMaterials = _materialsList;
+            }
+            catch (Exception ex)
+            {
+                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+                Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
+                logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex}.", "what");
             }
         }
 
@@ -600,7 +714,7 @@ namespace BK_Details_App.ViewModels
 
         #region Методы связанные с избранными материалами
 
-        public List<string> ReadFavorites(string filePath)
+        /*public List<string> ReadFavorites(string filePath)
         {
             try
             {
@@ -631,6 +745,47 @@ namespace BK_Details_App.ViewModels
 
                     return values;
                 }
+            }
+            catch (Exception ex)
+            {
+                ShowError("ReadFavorites: Ошибка!", ex.ToString());
+                return new List<string>();
+            }
+        }*/
+
+        public List<string> ReadFavorites(string filePath)
+        {
+            try
+            {
+                List<string> values = new List<string>();
+
+                if (!File.Exists(filePath))
+                    return values;
+
+                using (var workbook = new XLWorkbook(filePath))
+                {
+                    // Пытаемся получить лист "Избранное", или создаём, если его нет
+                    var worksheet = workbook.Worksheets.FirstOrDefault(ws => ws.Name == "Избранное");
+
+                    if (worksheet == null)
+                    {
+                        worksheet = workbook.Worksheets.Add("Избранное");
+                        workbook.Save(); // сохраняем с новым листом
+                        return values;   // список пока пустой
+                    }
+
+                    // Читаем значения из первой колонки
+                    var lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+
+                    for (int row = 1; row <= lastRow; row++)
+                    {
+                        var cellValue = worksheet.Cell(row, 1).GetString();
+                        if (!string.IsNullOrEmpty(cellValue))
+                            values.Add(cellValue);
+                    }
+                }
+
+                return values;
             }
             catch (Exception ex)
             {
@@ -1100,7 +1255,7 @@ namespace BK_Details_App.ViewModels
 
             //string fp = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
-            string fp = Path.Combine(appDataPath, "materials.xlsx");
+            string fp = Path.Combine(appDataPath, "test.xlsx");
 
 
             XLWorkbook workbook;

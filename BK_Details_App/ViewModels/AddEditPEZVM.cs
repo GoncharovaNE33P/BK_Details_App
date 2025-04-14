@@ -43,7 +43,7 @@ namespace BK_Details_App.ViewModels
 
         DetailsVM DetailsVMObj => new DetailsVM();
 
-        private string _oldName;
+        private string _oldName = "";
         public string OldName { get => _oldName; set => this.RaiseAndSetIfChanged(ref _oldName, value); }
 
         #endregion
@@ -102,17 +102,25 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                List<PEZ> ListPEZ = MainWindowViewModel.BaseListPEZs;
+                PEZ? original = MainWindowViewModel.BaseListPEZs.FirstOrDefault(x => x.IdNumber == id);
 
-                NewPEZ = ListPEZ.FirstOrDefault(x => x.IdNumber == id) ?? new PEZ();
-
-                QuantityPEZ = NewPEZ.Quantity.ToString();
+                if (original != null)
+                {
+                    NewPEZ = original.Clone();
+                    QuantityPEZ = original.Quantity.ToString();
+                }
+                else
+                {
+                    NewPEZ = new PEZ();
+                    QuantityPEZ = "";
+                }
             }
             catch (Exception ex)
             {
                 DetailsVMObj.ShowError("LoadData: Ошибка!", ex.ToString());
             }
         }
+
 
         public void AddEditPEZ()
         {
@@ -133,9 +141,18 @@ namespace BK_Details_App.ViewModels
                 if (NewPEZ != null) NewPEZ.Quantity = result;
 
                 if (FilePath.EndsWith(".csv"))
+                {
                     ProcessCsv(FilePath);
+                    return;
+                }
+
                 else if (FilePath.EndsWith(".xlsx") || FilePath.EndsWith(".xls"))
-                    ProcessExcel(FilePath);                
+                {
+                    ProcessExcel(FilePath);
+                }
+
+                MainWindowViewModel.Instance.Us = new DetailsView();
+                    
             }
             catch (Exception ex)
             {
@@ -151,7 +168,7 @@ namespace BK_Details_App.ViewModels
             {
                 if (NewPEZ.IdNumber == 0)
                 {
-                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name.Trim().ToLower() == NewPEZ.Name.Trim().ToLower()))
                     {
                         DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
                         return;
@@ -181,7 +198,8 @@ namespace BK_Details_App.ViewModels
                 }
                 else
                 {
-                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name) && NewPEZ.Name != OldName)
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name.Trim().ToLower() == NewPEZ.Name.Trim().ToLower()) &&
+                    NewPEZ.Name.Trim().ToLower() != OldName.Trim().ToLower())
                     {
                         DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
                         return;
@@ -248,7 +266,7 @@ namespace BK_Details_App.ViewModels
 
                 if (NewPEZ.IdNumber == 0)
                 {
-                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name))
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name.Trim().ToLower() == NewPEZ.Name.Trim().ToLower()))
                     {
                         DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
                         return;
@@ -278,7 +296,8 @@ namespace BK_Details_App.ViewModels
                 }
                 else
                 {
-                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name == NewPEZ.Name) && NewPEZ.Name != OldName)
+                    if (MainWindowViewModel.BaseListPEZs.Any(x => x.Name.Trim().ToLower() == NewPEZ.Name.Trim().ToLower()) &&
+                    NewPEZ.Name.Trim().ToLower() != OldName.Trim().ToLower())
                     {
                         DetailsVMObj.ShowError("Внимание!", NewPEZ.Name + " уже существует!");
                         return;
