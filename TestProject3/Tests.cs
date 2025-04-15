@@ -133,7 +133,6 @@ namespace TestProject3
             }
             catch (Exception ex)
             {
-                //ShowError("ReadFromExcelFile: Îøèáêà!", ex.ToString());
                 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
                 Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
                 logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
