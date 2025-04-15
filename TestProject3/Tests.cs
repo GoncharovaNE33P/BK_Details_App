@@ -87,7 +87,7 @@ namespace TestProject3
             try
             {
                 string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0,
-               AppContext.BaseDirectory.IndexOf("TestProject3") - 1),
+                AppContext.BaseDirectory.IndexOf("TestProject3") - 1),
                "BK_Details_App\\Materials\\materials.xlsx");
                 Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
                 WorksheetCollection collection = wb.Worksheets;

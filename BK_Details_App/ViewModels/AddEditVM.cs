@@ -127,7 +127,6 @@ namespace BK_Details_App.ViewModels
                             List<string> favs = DetailsVMObj.ReadFavorites(DetailsVMObj.path);
                             if (favs.Contains(OldName))
                             {
-                                //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
                                 string filePath = Path.Combine(appDataPath, "test.xlsx");
                                 XLWorkbook workbook = new XLWorkbook(filePath);
                                 var sheet = workbook.Worksheet("Избранное");
@@ -149,8 +148,6 @@ namespace BK_Details_App.ViewModels
                             }
 
                             //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-                            //string fp = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");   
 
                             string fp = Path.Combine(appDataPath, "materials.xlsx");
                             XLWorkbook wb = new XLWorkbook(fp);

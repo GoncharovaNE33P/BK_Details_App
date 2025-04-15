@@ -104,7 +104,6 @@ namespace BK_Details_App.ViewModels
         }
 
         #endregion
-        //public string path = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
         static string appDataPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "BK_Details_App",
@@ -306,119 +305,6 @@ namespace BK_Details_App.ViewModels
         #endregion
 
         #region Методы импорта и экспорта данных Excel
-
-        /*public void ReadFromExcelFile()
-        {
-            try
-            {
-                //string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
-                string appDataPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "BK_Details_App",
-                "Materials");
-
-                Directory.CreateDirectory(appDataPath); // гарантируем, что папка есть
-
-                string filePath = Path.Combine(appDataPath, "materials.xlsx");
-
-                if (!File.Exists(filePath))
-                {
-                    string installedFile = Path.Combine(AppContext.BaseDirectory, "Materials", "materials.xlsx");
-                    if (File.Exists(installedFile))
-                    {
-                        File.Copy(installedFile, filePath, overwrite: false);
-                    }
-                }
-
-                Aspose.Cells.Workbook wb = new Aspose.Cells.Workbook(filePath);
-                WorksheetCollection collection = wb.Worksheets;
-                Random random = new Random();
-
-                _groupsList.Clear();
-                _categoriesList.Clear();
-                _materialsList.Clear();
-
-                for (int worksheetIndex = 0; worksheetIndex < collection.Count; worksheetIndex++)
-                {
-                    Aspose.Cells.Worksheet worksheet = collection[worksheetIndex];
-
-                    var group = new BK_Details_App.Models.Groups()
-                    {
-                        GroupIdNumber = random.Next(),
-                        Name = worksheet.Name
-                    };
-                    _groupsList.Add(group);
-
-                    Models.Category? lastCategory = null;
-                    bool lastWasBold = false;
-                    int rows = worksheet.Cells.MaxDataRow;
-                    int cols = worksheet.Cells.MaxDataColumn;
-
-                    for (int i = 1; i <= rows; i++)
-                    {
-                        for (int j = 1; j <= cols; j++)
-                        {
-                            var cell = worksheet.Cells[i, j];
-                            var style = cell.GetStyle();
-                            var value = cell.StringValue;
-
-                            if (string.IsNullOrWhiteSpace(value))
-                                break;
-
-                            if (style.Font.IsBold)
-                            {
-                                if (lastWasBold && _categoriesList.Count > 0)
-                                {
-                                    // Удаляем предыдущую категорию, если была две жирные строки подряд
-                                    _categoriesList.RemoveAt(_categoriesList.Count - 1);
-                                }
-
-                                var category = new Models.Category()
-                                {
-                                    CategoryId = random.Next(1, 1000),
-                                    Name = value,
-                                    GroupNavigation = group,
-                                    Group = group.GroupIdNumber
-                                };
-                                _categoriesList.Add(category);
-                                lastCategory = category;
-                                lastWasBold = true;
-                                break;
-                            }
-                            else if (lastCategory != null)
-                            {
-                                var material = new Materials()
-                                {
-                                    IdNumber = worksheet.Cells[i, j - 1].StringValue == "" ? random.Next(1, 1000) : worksheet.Cells[i, j - 1].IntValue,
-                                    Name = cell.StringValue,
-                                    Measurement = worksheet.Cells[i, j + 1].StringValue,
-                                    Analogs = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 2].StringValue) ? "Аналогов нет" : worksheet.Cells[i, j + 2].StringValue,
-                                    Note = string.IsNullOrWhiteSpace(worksheet.Cells[i, j + 3].StringValue) ? "Примечание отсутствует" : worksheet.Cells[i, j + 3].StringValue,
-                                    GroupNavigation = group,
-                                    Group = group.GroupIdNumber,
-                                    CategoryNavigation = lastCategory,
-                                    Category = lastCategory.CategoryId
-                                };
-                                _materialsList.Add(material);
-                                lastWasBold = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                CountItemsMaterials = MaterialsList.Count();
-                CountItemsFileMaterials = MaterialsList.Count();
-                MainWindowViewModel.AllMaterials = MaterialsList;
-            }
-
-            catch (Exception ex)
-            {
-                using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-                Microsoft.Extensions.Logging.ILogger logger = factory.CreateLogger<Program>();
-                logger.LogInformation($":::::EXCEPTION:::::::::::::::EXCEPTION:::::::::::::::EXCEPTION::::::::{ex.ToString()}.", "what");
-            }
-        }*/
 
         public void ReadFromExcelFile()
         {
@@ -714,45 +600,6 @@ namespace BK_Details_App.ViewModels
 
         #region Методы связанные с избранными материалами
 
-        /*public List<string> ReadFavorites(string filePath)
-        {
-            try
-            {
-                List<string> values = new List<string>();                
-
-                if (!File.Exists(filePath))                    
-                    return values;
-                else
-                {
-                    Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook(filePath);
-                    Aspose.Cells.Worksheet sheet = workbook.Worksheets["Избранное"];
-
-                    if (sheet == null)
-                    {
-                        WorksheetCollection worksheets = workbook.Worksheets;
-                        Aspose.Cells.Worksheet worksheet = worksheets.Add("Избранное");
-                        workbook.Save(filePath);
-                    }
-
-                    int rowCount = sheet.Cells.MaxDataRow;
-
-                    for (int i = 0; i <= rowCount; i++)
-                    {
-                        string cellValue = sheet.Cells[i, 0].StringValue; // Читаем первую колонку
-                        if (!string.IsNullOrEmpty(cellValue))
-                            values.Add(cellValue);
-                    }
-
-                    return values;
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowError("ReadFavorites: Ошибка!", ex.ToString());
-                return new List<string>();
-            }
-        }*/
-
         public List<string> ReadFavorites(string filePath)
         {
             try
@@ -798,7 +645,6 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                //string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
                 string appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "BK_Details_App",
@@ -1119,7 +965,6 @@ namespace BK_Details_App.ViewModels
 
         public void AddMaterial(Materials material)
         {
-            //string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
             string appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "BK_Details_App",
@@ -1228,7 +1073,6 @@ namespace BK_Details_App.ViewModels
 
         public void DeleteMaterial(Materials material)
         {
-            //string filePath = Path.Combine(AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin") - 1), "Materials", "materials.xlsx");
             string appDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "BK_Details_App",
@@ -1252,8 +1096,6 @@ namespace BK_Details_App.ViewModels
                     break;
                 }
             }
-
-            //string fp = Path.Combine(Directory.GetCurrentDirectory(), "Materials", "test.xlsx");
 
             string fp = Path.Combine(appDataPath, "test.xlsx");
 
@@ -1293,7 +1135,7 @@ namespace BK_Details_App.ViewModels
             }
             workbook.SaveAs(fp);
 
-            if (Favs.Count > 0)
+            if (Favs.Any(x => x == material.Name))
             {
                 new FavouritesVM().RemoveFromFavorite(material.Name);
             }

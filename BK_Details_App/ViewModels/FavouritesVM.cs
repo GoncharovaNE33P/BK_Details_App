@@ -167,7 +167,6 @@ namespace BK_Details_App.ViewModels
         {
             try
             {
-                //string _filePath = "Materials\\test.xlsx";
                 string appDataPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "BK_Details_App",
