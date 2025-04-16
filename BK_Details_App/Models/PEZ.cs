@@ -14,6 +14,7 @@ namespace BK_Details_App.Models
         public int Quantity { get; set; }
         public string Color { get; set; }
         public string Matched { get; set; }
+        public bool MatchVisible { get; set; }
 
         public PEZ Clone()
         {

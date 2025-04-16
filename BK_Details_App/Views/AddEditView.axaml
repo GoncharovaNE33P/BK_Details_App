@@ -6,28 +6,48 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="BK_Details_App.AddEditView"
 			 x:DataType="vm:AddEditVM">
-	<Grid RowDefinitions="8*, Auto, 78*">
-		<!--Верхняя панель с лого и кнопками-->
-		<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto">
-			<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png" Height="45" Width="80"></Image>
-			<TextBlock Grid.Column="1" Classes="HeadPage" Text="{Binding Header}"></TextBlock>
-			<StackPanel Orientation="Horizontal" Grid.Column="2">
-				<Button Classes="ChooseUploadFile" Width="230" Command="{Binding ToBackCommand}" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Назад"></Button>
-				<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right" Content="{Binding Button}" Command="{Binding AddEdit}"></Button>
-			</StackPanel>
+	
+	<DockPanel>
+		<!-- Кастомная шапка -->
+		<Grid Height="35" Background="White" DockPanel.Dock="Top" PointerPressed="TitleBar_PointerPressed">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+
+			<Image VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.ico"></Image>
+			<TextBlock Text="BK_Details_App" Foreground="Black" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="40 0 0 0" />
+
+			<!-- Кнопка сворачивания -->
+			<Button Grid.Column="1" Content="—" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="40" Height="30"
+                   Click="Minimize_Click" Background="Transparent" Foreground="Black" Classes="Wrap"/>
 		</Grid>
 
-		<Grid Grid.Row="2">
-			<StackPanel HorizontalAlignment="Center">
-				<TextBlock Classes="HeadTextBox" Text="Введите наименование:"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Name}" TextWrapping="Wrap" Height="60"></TextBox>
-				<TextBlock Classes="HeadTextBox" Text="Введите единицы измерения:"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Measurement}" TextWrapping="Wrap" Height="60"></TextBox>
-				<TextBlock Classes="HeadTextBox" Text="Введите аналоги:"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Analogs}" TextWrapping="Wrap" Height="60"></TextBox>
-				<TextBlock Classes="HeadTextBox" Text="Введите примечание:"></TextBlock>
-				<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Note}" TextWrapping="Wrap" Height="60"></TextBox>
-			</StackPanel>
+		<!-- Основное содержимое -->
+		<Grid RowDefinitions="8*, Auto, 78*">
+			<!--Верхняя панель с лого и кнопками-->
+			<Grid Grid.Row="0" ColumnDefinitions="5*, 68*, Auto">
+				<Image Grid.Column="0" HorizontalAlignment="Left" Margin="10" Source="/Assets/logobk.png" Height="45" Width="80"></Image>
+				<TextBlock Grid.Column="1" Classes="HeadPage" Text="{Binding Header}"></TextBlock>
+				<StackPanel Orientation="Horizontal" Grid.Column="2">
+					<Button Classes="ChooseUploadFile" Width="230" Command="{Binding ToBackCommand}" Margin="0 10 20 10" HorizontalAlignment="Right" Content="Назад"></Button>
+					<Button Classes="ChooseUploadFile" Width="220" Margin="0 10 20 10" HorizontalAlignment="Right" Content="{Binding Button}" Command="{Binding AddEdit}"></Button>
+				</StackPanel>
+			</Grid>
+
+			<Grid Grid.Row="2">
+				<StackPanel HorizontalAlignment="Center">
+					<TextBlock Classes="HeadTextBox" Text="Введите наименование:"></TextBlock>
+					<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Name}" TextWrapping="Wrap" Height="60"></TextBox>
+					<TextBlock Classes="HeadTextBox" Text="Введите единицы измерения:"></TextBlock>
+					<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Measurement}" TextWrapping="Wrap" Height="60"></TextBox>
+					<TextBlock Classes="HeadTextBox" Text="Введите аналоги:"></TextBlock>
+					<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Analogs}" TextWrapping="Wrap" Height="60"></TextBox>
+					<TextBlock Classes="HeadTextBox" Text="Введите примечание:"></TextBlock>
+					<TextBox Classes="AddEditPEZ" Grid.Column="0" Text="{Binding NewMaterial.Note}" TextWrapping="Wrap" Height="60"></TextBox>
+				</StackPanel>
+			</Grid>
 		</Grid>
-	</Grid>
+	</DockPanel>
 </UserControl>

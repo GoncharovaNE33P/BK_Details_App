@@ -103,13 +103,19 @@ namespace BK_Details_App.ViewModels
             e.Cancel = true;
         }
 
-        #endregion
+        
         static string appDataPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "BK_Details_App",
         "Materials");
 
         public string path = Path.Combine(appDataPath, "test.xlsx");
+
+        bool _matchVisible = false;
+        public bool MatchVisible { get => _matchVisible; set => this.RaiseAndSetIfChanged(ref _matchVisible, value); }
+
+        #endregion
+
         public DetailsVM(bool skipInit = false) 
         {            
             if (skipInit)
@@ -117,6 +123,7 @@ namespace BK_Details_App.ViewModels
                 return;
             } 
         }
+
         public DetailsVM()
         {
 
@@ -726,7 +733,16 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
                     Title = "BK_Details_App",
-                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico")))
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico"))),
+                    SystemDecorations = SystemDecorations.None,
+                    TransparencyLevelHint = new[]
+                    {
+                        WindowTransparencyLevel.None
+                    },
+
+                    ExtendClientAreaToDecorationsHint = true,
+                    ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome,
+                    Background = Brushes.White
                 };
 
                 viewModel.CloseAction = () =>
@@ -771,7 +787,16 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
                     Title = "BK_Details_App",
-                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico")))
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico"))),
+                    SystemDecorations = SystemDecorations.None,
+                    TransparencyLevelHint = new[]
+                    {
+                        WindowTransparencyLevel.None
+                    },
+
+                    ExtendClientAreaToDecorationsHint = true,
+                    ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome,
+                    Background = Brushes.White
                 };
 
                 viewModel.CloseAction = () =>
@@ -923,9 +948,13 @@ namespace BK_Details_App.ViewModels
                 Parallel.ForEach(CollectionPEZs, _element =>
                 {
                     MatchColors(_element, materialNames, scorer);
-                }); 
-                   
-                MainWindowViewModel.Instance.Us = new DetailsView();               
+                    if (_element.Color == "#FFE666") _element.MatchVisible = true;
+                    else _element.MatchVisible = false;
+                });
+
+                
+                MainWindowViewModel.Instance.Us = new DetailsView();
+                ShowSuccess("Успешно!", "Сравнение выполнено!");
             }
             catch (Exception ex)
             {
@@ -957,6 +986,8 @@ namespace BK_Details_App.ViewModels
             {
                 _element.Color = "#FFFFFF";
             }
+
+
         }
 
         #endregion        
@@ -1048,7 +1079,16 @@ namespace BK_Details_App.ViewModels
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
                     Title = "BK_Details_App",
-                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico")))
+                    Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://BK_Details_App/Assets/logobk.ico"))),
+                    SystemDecorations = SystemDecorations.None,
+                    TransparencyLevelHint = new[]
+                    {
+                        WindowTransparencyLevel.None
+                    },
+
+                    ExtendClientAreaToDecorationsHint = true,
+                    ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome,
+                    Background = Brushes.White
                 };
 
                 viewModel.CloseAction = () =>
