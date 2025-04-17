@@ -727,8 +727,8 @@ namespace BK_Details_App.ViewModels
 
                 _addPEZWindow = new Window
                 {
-                    MinHeight = 600,
-                    MinWidth = 1500,
+                    MinHeight = 700,
+                    MinWidth = 1300,
                     Content = new AddEditPEZView { DataContext = viewModel },
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
@@ -781,8 +781,8 @@ namespace BK_Details_App.ViewModels
 
                 _addPEZWindow = new Window
                 {
-                    MinHeight = 600,
-                    MinWidth = 1500,
+                    MinHeight = 700,
+                    MinWidth = 1300,
                     Content = new AddEditPEZView { DataContext = viewModel },
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
@@ -1073,8 +1073,8 @@ namespace BK_Details_App.ViewModels
 
                 _addWindow = new Window
                 {
-                    MinHeight = 600,
-                    MinWidth = 1500,
+                    MinHeight = 700,
+                    MinWidth = 1300,
                     Content = new AddEditView { DataContext = viewModel },
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     CanResize = false,
